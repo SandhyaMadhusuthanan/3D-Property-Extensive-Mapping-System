@@ -33,11 +33,26 @@ This directory catalogs all interface views and workflow stages of the **ULPIN 3
 ---
 
 ### 4. Land Breakdown Views
-*The system provides multi-tiered hierarchical breakdowns from parcel footprints down to individual property units:*
-
 * **View 1:** ![Land Breakdown 1](./Landbreakdown1.png)
 * **View 2:** ![Land Breakdown 2](./Landbreakdown2.png)
 * **View 3:** ![Land Breakdown 3](./Landbreakdown3.png)
 * **View 4:** ![Land Breakdown 4](./Landbreakdown4.png)
 * **View 5:** ![Land Breakdown 5](./Landbreakdown5.png)
-*
+
+---
+
+### 5. Room Breakdown Views
+* **Room View 1:** ![Room Breakdown 1](./roombreakdown1.png)
+* **Room View 2:** ![Room Breakdown 2](./roombreakdown2.png)
+*Detailed interior volumetric breakdown of rooms within a property unit.*
+
+---
+
+### 6. Find My Plot Views
+**Plot Locator View 1:**
+![Find My Plot 1](./Find-My-Plot1.png)
+*Search and location interface designed to quickly pinpoint specific plots.*
+
+**Plot Locator View 2:**
+![Find My Plot 2](./Find-My-Plot2.png)
+*Advanced coordinate search and mapping view.*
