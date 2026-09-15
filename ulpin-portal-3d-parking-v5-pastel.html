@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULPIN — 3D Property Mapping System</title>
+<style>
+  :root{
+    --bg:#f7f8fc;
+    --panel:#ffffff;
+    --panel-2:#f1f3f9;
+    --line:#e2e6f0;
+    --ink:#3d4560;
+    --ink-dim:#7a8296;
+    --ink-faint:#a7aec0;
+    --indigo:#8f97f5;
+    --indigo-dim:#6f78e0;
+    --green:#6fd99a;
+    --amber:#f5b559;
+    --red:#f68585;
+    --purple:#a78bfa;
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  /* ================= LOGIN ================= */
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(1100px 700px at 15% -10%, #eef2fb 0%, var(--bg) 55%);}
+  .login-card{width:100%;max-width:410px;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .login-card .brandmark{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .login-card .brandmark .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--indigo),#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .login-card h1{font-size:18px;margin:0 0 4px;}
+  .login-card .sub{color:var(--ink-dim);font-size:13.5px;margin:0 0 22px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--ink-dim);margin-bottom:6px;}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;color:var(--ink);font-size:14px;outline:none;}
+  .field input:focus{border-color:var(--indigo);}
+  .role-toggle{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px;margin-bottom:18px;}
+  .role-toggle button{flex:1;padding:8px 0;border:none;background:transparent;color:var(--ink-dim);font-size:12.5px;border-radius:6px;cursor:pointer;}
+  .role-toggle button.active{background:var(--indigo);color:white;}
+  .login-btn{width:100%;background:var(--indigo);border:none;color:white;padding:12px 0;border-radius:8px;font-size:14.5px;font-weight:600;cursor:pointer;margin-top:6px;}
+  .login-btn:hover{background:var(--indigo-dim);}
+  .login-error{color:#f68585;font-size:12.5px;margin:-6px 0 12px;display:none;}
+  .demo-box{margin-top:18px;background:rgba(143,151,245,.08);border:1px dashed var(--indigo);border-radius:8px;padding:11px 12px;font-size:12.5px;color:var(--ink-dim);line-height:1.6;}
+  .demo-box b{color:var(--ink);}
+
+  /* ================= APP SHELL ================= */
+  #app{display:none;}
+  #app.show{display:flex;min-height:100vh;}
+  .sidebar{width:220px;flex:none;background:var(--panel-2);border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:2px;}
+  .logo{display:flex;align-items:center;gap:10px;padding:4px 6px 18px;}
+  .logo .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--indigo),#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
+  .logo .txt b{display:block;font-size:15px;}
+  .logo .txt span{display:block;font-size:10.5px;color:var(--ink-faint);}
+  .nav-section-label{font-size:10.5px;color:var(--ink-faint);letter-spacing:.4px;margin:14px 8px 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--ink-dim);font-size:13.5px;cursor:pointer;}
+  .nav-item .ic{width:18px;text-align:center;}
+  .nav-item:hover{background:var(--panel);color:var(--ink);}
+  .nav-item.active{background:var(--indigo);color:#fff;}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel-2);}
+  .searchbar{flex:1;max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--ink-dim);font-size:13px;}
+  .search-wrap{position:relative;flex:1;max-width:440px;}
+  .search-wrap .searchbar{max-width:none;width:100%;color:var(--ink);}
+  .search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;max-height:340px;overflow:auto;z-index:60;display:none;box-shadow:0 16px 40px rgba(0,0,0,.5);}
+  .search-results.show{display:block;}
+  .search-result-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);}
+  .search-result-item:last-child{border-bottom:none;}
+  .search-result-item:hover{background:var(--panel-2);}
+  .search-result-item .sr-type{font-size:10px;color:var(--indigo);text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+  .search-result-item .sr-title{font-size:13px;font-weight:600;margin-top:2px;}
+  .search-result-item .sr-sub{font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .search-result-empty{padding:12px;font-size:12.5px;color:var(--ink-faint);}
+  .userchip{display:flex;align-items:center;gap:8px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:20px;font-size:12.5px;}
+  .userchip .av{width:24px;height:24px;border-radius:50%;background:var(--indigo);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .logout-link{color:var(--ink-faint);font-size:11.5px;text-decoration:underline;cursor:pointer;margin-left:6px;}
+
+  .content{flex:1;padding:20px 24px 50px;overflow:auto;}
+  .crumbs{font-size:12.5px;color:var(--ink-faint);margin-bottom:10px;}
+  .crumbs span.cur{color:var(--ink-dim);}
+  .crumbs a{cursor:pointer;color:var(--ink-dim);}
+  .crumbs a:hover{color:var(--ink);text-decoration:underline;}
+
+  h1.page-title{font-size:20px;margin:0 0 4px;}
+  p.page-sub{color:var(--ink-dim);font-size:13px;margin:0 0 18px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .grid{display:grid;gap:14px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:1000px){.grid.cols-4{grid-template-columns:repeat(2,1fr);} .grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+
+  .stat{padding:14px 16px;}
+  .stat .label{font-size:11.5px;color:var(--ink-faint);}
+  .stat .val{font-size:19px;font-weight:700;margin-top:4px;}
+
+  .prop-card{cursor:pointer;overflow:hidden;padding:0;}
+  .prop-card .thumb{height:126px;background:linear-gradient(180deg,#eef1f8 0%, #e2e7f5 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .prop-card .thumb svg{height:100%;width:100%;}
+  .prop-card .thumb img{height:100%;width:100%;object-fit:cover;display:block;}
+  .prop-card .thumb::after{content:'';position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,rgba(10,15,26,0) 0%, rgba(10,15,26,.75) 100%);pointer-events:none;}
+
+  /* ================= AERIAL / REAL PHOTO SECTIONS ================= */
+  .aerial-photo-wrap{position:relative;border-radius:12px;overflow:hidden;margin-bottom:16px;border:1px solid var(--line);}
+  .aerial-photo-wrap img{display:block;width:100%;height:280px;object-fit:cover;}
+  .aerial-fallback{width:100%;height:280px;overflow:hidden;}
+  .aerial-fallback svg{width:100%;height:100%;display:block;}
+  .aerial-photo-wrap .caption{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;background:linear-gradient(180deg,rgba(10,15,26,0) 0%, rgba(10,15,26,.9) 100%);}
+  .aerial-photo-wrap .caption b{font-size:13.5px;}
+  .aerial-photo-wrap .caption span{display:block;font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
+  .photo-banner{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block;margin-bottom:16px;}
+  .photo-banner.photo-fallback{overflow:hidden;}
+  .photo-banner.photo-fallback svg{width:100%;height:100%;display:block;}
+  .photo-banner .fallback-tag{position:absolute;left:14px;bottom:12px;background:rgba(10,15,26,.75);border:1px solid var(--line);color:var(--ink-dim);font-size:11px;padding:4px 10px;border-radius:20px;}
+  .house-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:stretch;}
+  @media(max-width:900px){.house-hero{grid-template-columns:1fr;}}
+  .house-hero img{width:100%;height:100%;min-height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line);}
+  .household-list{display:grid;gap:8px;margin-top:10px;}
+  .household-member{display:flex;justify-content:space-between;align-items:center;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;}
+  .household-member .rel{color:var(--ink-faint);font-size:11px;}
+  .headcount-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(143,151,245,.12);border:1px solid rgba(143,151,245,.35);color:var(--indigo);padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;}
+  .prop-card .badge{position:absolute;top:8px;right:8px;font-size:10.5px;padding:3px 9px;border-radius:20px;background:rgba(111,217,154,.15);color:var(--green);border:1px solid rgba(111,217,154,.35);z-index:2;}
+  .prop-card .badge.vacant{background:rgba(245,181,89,.15);color:var(--amber);border-color:rgba(245,181,89,.35);}
+  .prop-card .body{padding:12px 14px 14px;}
+  .prop-card .body h4{margin:0 0 3px;font-size:14px;}
+  .prop-card .body p{margin:0;font-size:12px;color:var(--ink-dim);}
+  .prop-card .body .meta{display:flex;gap:10px;margin-top:8px;font-size:11.5px;color:var(--ink-faint);}
+  .prop-card:hover{border-color:var(--indigo);}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:4px 10px;border-radius:20px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);}
+
+  .btn{border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn.primary{background:var(--indigo);color:#fff;}
+  .btn.primary:hover{background:var(--indigo-dim);}
+  .btn.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.green{background:var(--green);color:#052e16;}
+  .btn.sm{padding:7px 12px;font-size:12px;}
+
+  .row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);}
+  /* ---- Land / area breakdown bars (room-wise for houses, feature-wise for complexes) ---- */
+  .landbar{display:flex;width:100%;height:24px;border-radius:8px;overflow:hidden;margin:12px 0 14px;border:1px solid var(--line);}
+  .landbar > span{height:100%;min-width:2px;}
+  .landbar-legend{display:flex;flex-direction:column;gap:0;}
+  .landbar-legend .lb-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:12.5px;border-bottom:1px dashed rgba(255,255,255,.06);}
+  .landbar-legend .lb-row:last-child{border-bottom:none;}
+  .lb-name{display:flex;align-items:center;gap:8px;color:var(--ink-dim,#c8d0e3);}
+  .lb-dot{width:10px;height:10px;border-radius:3px;flex:0 0 auto;}
+  .lb-val{font-weight:700;font-size:12.5px;}
+  .lb-pct{color:var(--ink-faint);font-size:11px;margin-left:6px;}
+  .land-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
+  .land-total-row .big{font-size:19px;font-weight:800;}
+  .row span:first-child{color:var(--ink-dim);}
+  .row span:last-child{text-align:right;max-width:60%;}
+
+  .chips{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .chip{padding:7px 14px;border-radius:20px;font-size:12.5px;background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);cursor:pointer;}
+  .chip.active{background:var(--indigo);color:#fff;border-color:var(--indigo);}
+
+  .map-wrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+    background:radial-gradient(1200px 500px at 50% -20%, #eef2fb, #f7f8fc 60%);}
+  .map-wrap > svg{display:block;width:100%;height:auto;}
+  .map-marker{cursor:pointer;}
+  .map-marker .b-scale{transition:transform .15s;transform-origin:center bottom;}
+  .map-marker:hover .b-scale{transform:scale(1.08) translateY(-2px);}
+  .map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--ink-dim);}
+  .map-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+  /* ================= LIVE GOOGLE MAP (Land Map View) ================= */
+  .gmap-stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);height:480px;background:#eef1f8;}
+  .gmap-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .gmap-overlay{position:absolute;inset:0;pointer-events:none;}
+  .gmap-plotbox{position:absolute;pointer-events:auto;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;text-align:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);transition:transform .12s;}
+  .gmap-plotbox:hover{transform:scale(1.07);z-index:5;}
+  .gmap-plotbox .gp-id{font-weight:700;font-size:11px;}
+  .gmap-plotbox .gp-status{font-size:8.5px;opacity:.9;}
+  .gmap-plotbox .gp-badge{position:absolute;top:1px;right:2px;font-size:11px;}
+  .gmap-zone{position:absolute;pointer-events:none;border-radius:8px;}
+  .gmap-zone-label{position:absolute;pointer-events:none;font-size:10.5px;font-weight:700;color:#f5b559;text-shadow:0 1px 4px rgba(0,0,0,.95);white-space:nowrap;}
+  .gmap-toolbar{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:6;}
+  .gmap-toolbar button{background:rgba(10,15,26,.85);border:1px solid var(--line);color:var(--ink-dim);font-size:11px;padding:7px 11px;border-radius:8px;cursor:pointer;backdrop-filter:blur(4px);}
+  .gmap-toolbar button.active{background:var(--indigo);color:#fff;border-color:var(--indigo);}
+  .gmap-badge-loc{position:absolute;bottom:12px;left:12px;z-index:6;background:rgba(10,15,26,.85);border:1px solid var(--line);color:var(--ink-dim);font-size:11.5px;padding:6px 12px;border-radius:8px;backdrop-filter:blur(4px);}
+
+  /* ================= AERIAL AREA VIEW CHROME ================= */
+  .aerial-stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+  .aerial-stage .map-wrap{border:none;border-radius:0;}
+  .aerial-toolbar{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;z-index:5;}
+  .aerial-toolbar .abtn{width:34px;height:34px;border-radius:9px;background:rgba(10,15,26,.82);border:1px solid var(--line);color:var(--ink-dim);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;backdrop-filter:blur(4px);user-select:none;}
+  .aerial-toolbar .abtn:hover{color:#fff;border-color:var(--indigo);}
+  .aerial-toolbar .abtn.sep{height:1px;background:var(--line);padding:0;margin:2px 4px;}
+  .aerial-badge{position:absolute;bottom:12px;left:12px;z-index:5;background:rgba(10,15,26,.82);border:1px solid var(--line);color:var(--ink-dim);font-size:11.5px;padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);}
+  .aerial-minimap{position:absolute;bottom:12px;right:12px;width:120px;height:82px;border-radius:8px;overflow:hidden;border:1px solid var(--line);z-index:5;background:#eef1f8;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .aerial-minimap > svg{display:block;width:100%;height:100%;position:absolute;top:0;left:0;}
+  .aerial-loc{position:absolute;top:12px;right:12px;z-index:5;background:rgba(10,15,26,.82);border:1px solid var(--line);color:var(--ink);font-size:12px;padding:7px 14px;border-radius:8px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);}
+  .aerial-callout{position:absolute;z-index:6;background:rgba(10,15,26,.94);border:1px solid var(--indigo);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink);box-shadow:0 10px 26px rgba(0,0,0,.55);pointer-events:none;max-width:190px;}
+  .aerial-callout b{display:block;font-size:13px;margin-bottom:2px;}
+  .aerial-callout .t1{color:var(--ink-dim);font-size:11px;}
+  .type-chips{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .type-chips .chip{display:flex;align-items:center;gap:6px;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+  .tab{padding:9px 14px;font-size:13px;color:var(--ink-dim);cursor:pointer;border-bottom:2px solid transparent;}
+  .tab.active{color:#fff;border-bottom-color:var(--indigo);}
+
+  .floor-list{display:flex;flex-direction:column;gap:6px;}
+  .floor-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);cursor:pointer;font-size:13px;}
+  .floor-item:hover, .floor-item.active{border-color:var(--indigo);}
+  .floor-item .occ{font-size:11px;color:var(--ink-faint);}
+
+  .unit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .unit-cell{position:relative;padding:12px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);text-align:center;cursor:pointer;font-size:12.5px;}
+  .unit-cell.occupied{border-color:rgba(111,217,154,.4);}
+  .unit-cell.vacant{border-color:rgba(245,181,89,.4);}
+  .unit-cell.mine{border-color:var(--indigo);background:rgba(143,151,245,.12);}
+  .unit-cell:hover{transform:translateY(-2px);}
+  .unit-cell .u-id{font-weight:700;font-size:13.5px;}
+  .unit-cell .u-status{font-size:10.5px;color:var(--ink-faint);margin-top:3px;}
+  .unit-cell.govproject{border-color:var(--amber);box-shadow:0 0 0 1px rgba(245,181,89,.35) inset;}
+  .project-badge{position:absolute;top:6px;left:6px;font-size:13px;line-height:1;}
+  .land-nav-arrow{display:inline-flex;align-items:center;gap:8px;background:var(--indigo);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+  .land-nav-arrow:hover{background:var(--indigo-dim);}
+  .land-nav-arrow.back{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);}
+  .amenity-btn{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:6px;background:rgba(143,151,245,.15);border:1px solid rgba(143,151,245,.4);color:var(--ink);font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .amenity-btn:hover{background:var(--indigo);color:#fff;}
+  .amenity-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line);}
+  .amenity-row:last-child{border-bottom:none;}
+  .amenity-row span:last-child{color:var(--ink-faint);white-space:nowrap;}
+
+  .verified{display:inline-flex;align-items:center;gap:6px;background:rgba(111,217,154,.12);color:var(--green);border:1px solid rgba(111,217,154,.3);padding:6px 12px;border-radius:20px;font-size:12px;margin-top:10px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(45,52,74,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:100%;max-width:760px;max-height:92vh;overflow:auto;padding:20px 22px;}
+  .modal-box .close{float:right;background:none;border:none;color:var(--ink-dim);font-size:20px;cursor:pointer;}
+  .stage{height:360px;border-radius:10px;background:radial-gradient(circle at 50% 15%, #eef2fb, #ffffff 78%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;perspective:1000px;cursor:grab;}
+  .building3d{position:relative;width:200px;height:240px;transform-style:preserve-3d;transform:rotateX(-14deg) rotateY(28deg);}
+  .b-floor{position:absolute;left:0;width:200px;transform-style:preserve-3d;}
+  .b-floor .face-front, .b-floor .face-side, .b-floor .face-window{position:absolute;}
+  .building3d > .face-front{position:absolute;left:0;bottom:0;width:200px;border:1px solid #56699120;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);overflow:hidden;border-radius:2px 2px 0 0;}
+  .building3d > .face-side{position:absolute;left:200px;bottom:0;width:76px;background:#c3cce3;transform:rotateY(90deg);transform-origin:left;overflow:hidden;}
+  .window{position:absolute;background:linear-gradient(180deg,#ffe9a8,#ffd77a);border-radius:1px;opacity:.85;}
+  .window.off{background:#c7ceda;opacity:.5;}
+  .floor-line{position:absolute;left:0;right:0;height:1px;background:rgba(0,0,0,.35);}
+  .balcony-rail{position:absolute;left:6px;right:6px;height:4px;background:repeating-linear-gradient(90deg, rgba(255,255,255,.4) 0 2px, transparent 2px 6px);opacity:.55;}
+  .win-glass{position:absolute;border-radius:1px;background:linear-gradient(180deg, rgba(120,150,190,.55), rgba(40,55,80,.65));border:1px solid rgba(255,255,255,.25);}
+  .win-glass.lit{background:linear-gradient(180deg,#ffe9a8,#ffcf6b);box-shadow:0 0 6px 1px rgba(255,210,120,.55);border-color:rgba(255,230,160,.6);}
+  .win-glass.side{background:linear-gradient(180deg, rgba(90,110,145,.5), rgba(30,42,64,.6));}
+  .win-glass.side.lit{background:linear-gradient(180deg,#e8c477,#c99a4c);box-shadow:0 0 4px 1px rgba(230,180,100,.4);}
+  .entrance-canopy{position:absolute;left:50%;bottom:0;width:60px;height:8px;background:#aab4c8;transform:translateX(-50%);border-radius:2px 2px 0 0;box-shadow:0 -2px 6px rgba(0,0,0,.4);}
+  .roof-tank{position:absolute;width:16px;height:20px;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#8b98b8,#54638a);}
+  .roof-tank.sm{width:12px;height:14px;}
+  .roof-antenna{position:absolute;width:2px;height:26px;background:#7a8296;}
+  .roof-antenna::after{content:'';position:absolute;top:-4px;left:-3px;width:8px;height:2px;background:#7a8296;}
+  /* Individual house 3D model (gable roof bungalow) */
+  .house3d{position:relative;width:180px;height:150px;transform-style:preserve-3d;transform:rotateX(-14deg) rotateY(28deg);}
+  .house-wall-front{position:absolute;left:0;bottom:0;width:180px;height:96px;border-radius:2px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);}
+  .house-wall-side{position:absolute;left:180px;bottom:0;width:70px;height:96px;background:#b9c3de;transform:rotateY(90deg);transform-origin:left;overflow:hidden;}
+  .house-roof-front{position:absolute;left:-8px;bottom:96px;width:196px;height:0;border-left:98px solid transparent;border-right:98px solid transparent;border-bottom:46px solid #7c3f2e;filter:brightness(1.05);}
+  .house-roof-side{position:absolute;left:180px;bottom:96px;width:70px;height:46px;background:#5c2f22;transform:rotateY(90deg);transform-origin:left;clip-path:polygon(0 100%,50% 0,100% 100%);}
+  .house-door{position:absolute;left:50%;bottom:0;width:26px;height:48px;background:linear-gradient(180deg,#8a5a34,#6b4425);transform:translateX(-50%);border-radius:3px 3px 0 0;border:1px solid rgba(0,0,0,.3);}
+  .house-window{position:absolute;width:22px;height:22px;border-radius:2px;background:linear-gradient(180deg,#ffe9a8,#ffcf6b);border:2px solid #3a2a1c;box-shadow:0 0 6px 1px rgba(255,210,120,.5);}
+  .house-window.off{background:linear-gradient(180deg,#c9d0e6,#aab4d2);box-shadow:none;}
+  .house-yard-wall{position:absolute;bottom:-14px;left:-30px;width:250px;height:10px;background:#b9c3de;border-radius:2px;}
+  .house-gate{position:absolute;bottom:-14px;left:36px;width:24px;height:14px;background:repeating-linear-gradient(90deg,#7a8296 0 2px,transparent 2px 5px);}
+  .house-tree{position:absolute;bottom:-14px;}
+  .house-tree .trunk{width:4px;height:14px;background:#6b4425;margin:0 auto;}
+  .house-tree .canopy{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #2f8f57, #1f6b46);margin-bottom:-4px;}
+  .roof-cap{position:absolute;left:-4px;width:208px;height:8px;background:#a7aec0;border-radius:3px 3px 0 0;}
+  .ground-shadow{position:absolute;bottom:-18px;left:50%;width:230px;height:36px;background:radial-gradient(ellipse at center, rgba(0,0,0,.45), transparent 70%);transform:translateX(-50%);}
+  .stage-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink-faint);}
+  .stage-controls{position:absolute;top:10px;right:10px;display:flex;gap:8px;}
+
+  .findplot-wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+  @media(max-width:950px){.findplot-wrap{grid-template-columns:1fr;}}
+  .compass{width:70px;height:70px;border-radius:50%;background:var(--panel-2);border:2px solid var(--indigo);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto;}
+  .distance-box{display:flex;gap:22px;justify-content:center;margin:14px 0;}
+  .distance-box .d-item{text-align:center;}
+  .distance-box .d-val{font-size:20px;font-weight:700;}
+  .distance-box .d-label{font-size:11px;color:var(--ink-faint);}
+  .note{font-size:12px;color:var(--ink-faint);background:var(--panel-2);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;margin-top:10px;line-height:1.6;}
+
+  select.sel{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 10px;font-size:13px;}
+
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .resident-card h4{margin:0 0 10px;font-size:13.5px;}
+
+  /* ================= VERTICAL OWNERSHIP LAYERS (3D cadastre cross-section) ================= */
+  .vlayer-stack{display:flex;flex-direction:column;gap:4px;}
+  .vlayer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-radius:7px;font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:var(--panel-2);transition:transform .12s,border-color .12s;}
+  .vlayer-row:hover{transform:translateX(3px);border-color:var(--indigo);}
+  .vlayer-row.active{border-color:var(--indigo);box-shadow:0 0 0 1px var(--indigo) inset;}
+  .vlayer-row .vl-name{font-weight:600;}
+  .vlayer-row .vl-sub{font-size:10.5px;color:var(--ink-faint);}
+  .vlayer-row .vl-tag{font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .vlayer-row.air{background:repeating-linear-gradient(45deg, rgba(167,139,250,.07) 0 6px, rgba(219,225,240,.5) 6px 12px);border-style:dashed;}
+  .vlayer-row.air .vl-tag{background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.35);}
+  .vlayer-row.floor .vl-tag{background:rgba(143,151,245,.15);color:var(--indigo);border:1px solid rgba(143,151,245,.35);}
+  .vlayer-row.common .vl-tag{background:rgba(94,234,212,.13);color:#5eead4;border:1px solid rgba(94,234,212,.3);}
+  .vlayer-row.basement{background:linear-gradient(180deg,#e2e7f5,#d3d9ec);}
+  .vlayer-row.basement .vl-tag{background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.35);}
+  .vlayer-row.utility{border-style:dashed;background:repeating-linear-gradient(45deg, rgba(245,181,89,.06) 0 6px, rgba(219,225,240,.5) 6px 12px);}
+  .vlayer-row.utility .vl-tag{background:rgba(245,181,89,.15);color:var(--amber);border:1px solid rgba(245,181,89,.35);}
+
+  /* ================= PARKING GRID ================= */
+  .parking-legend-note{font-size:12px;color:var(--ink-faint);background:var(--panel-2);border:1px dashed var(--line);border-radius:8px;padding:9px 12px;margin-bottom:12px;line-height:1.6;}
+  .parking-cell{position:relative;padding:12px 10px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);text-align:center;cursor:pointer;font-size:12px;}
+  .parking-cell:hover{transform:translateY(-2px);}
+  .parking-cell .p-ic{font-size:17px;}
+  .parking-cell .p-id{font-weight:700;font-size:11.5px;margin-top:4px;word-break:break-all;}
+  .parking-cell .p-status{font-size:10px;color:var(--ink-faint);margin-top:3px;}
+  .parking-cell.allotted{border-color:rgba(111,217,154,.4);}
+  .parking-cell.visitor{border-color:rgba(245,181,89,.4);}
+  .parking-cell.ev{border-color:rgba(56,189,248,.45);}
+  .parking-cell.vacant{border-color:var(--line);opacity:.72;}
+  .shop-parking-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .shop-parking-pill{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:11px;min-width:96px;}
+  .shop-parking-pill b{font-size:12.5px;}
+
+  /* ================= 3D MODEL — BASEMENT PARKING + AIR RIGHTS ENVELOPE ================= */
+  .basement-slab{position:absolute;left:-14px;bottom:-32px;width:228px;height:26px;border-radius:3px;border:1px solid rgba(56,189,248,.4);
+    background:repeating-linear-gradient(90deg, rgba(56,189,248,.16) 0 6px, rgba(214,220,235,.9) 6px 24px);box-shadow:0 8px 16px rgba(0,0,0,.5);}
+  .basement-label{position:absolute;left:6px;bottom:-24px;font-size:8px;letter-spacing:.4px;color:#7dd3fc;white-space:nowrap;}
+  .airrights-volume{position:absolute;left:2px;width:196px;border-radius:2px;border:1px dashed rgba(167,139,250,.55);
+    background:repeating-linear-gradient(45deg, rgba(167,139,250,.09) 0 6px, transparent 6px 12px);}
+  .airrights-label{position:absolute;left:6px;top:6px;font-size:8px;letter-spacing:.4px;color:#c4b5fd;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="brandmark"><div class="mark">U</div><div><b style="font-size:15px;">ULPIN</b><div style="font-size:10.5px;color:var(--ink-faint);">3D Property Mapping System</div></div></div>
+    <h1>Sign in to your account</h1>
+    <p class="sub">View ownership, tenancy, lease and 3D building records for your area</p>
+
+    <div class="role-toggle">
+      <button type="button" class="active" data-role="official">Government Official</button>
+      <button type="button" data-role="owner">Property Owner / Citizen</button>
+    </div>
+
+    <div class="field"><label>User ID / Email / Aadhaar No.</label><input id="userid" type="text" value="GO12345"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" value="demo@1234"></div>
+    <div class="login-error" id="login-error">Invalid User ID or password. Try the demo credentials below.</div>
+    <button class="login-btn" onclick="tryLogin()">Login</button>
+
+    <div class="demo-box">
+      Demo build — login is simulated locally, no real account is checked.<br><br>
+      <b>Government Official</b> — User ID <b>GO12345</b> · Password <b>demo@1234</b><br>
+      <b>Owner / Citizen</b> — User ID <b>OWN100512</b> · Password <b>owner@1234</b>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="sidebar">
+    <div class="logo"><div class="mark">U</div><div class="txt"><b>ULPIN</b><span>3D Property Mapping</span></div></div>
+    <div class="nav-item active" data-nav="dashboard" onclick="showPage('dashboard')"><span class="ic">🏠</span> Dashboard</div>
+    <div class="nav-item" data-nav="overview" onclick="showPage('overview')"><span class="ic">🗺️</span> Overview Map</div>
+    <div class="nav-section-label">PROPERTY CATEGORIES</div>
+    <div class="nav-item" data-nav="lands" onclick="showPage('lands')"><span class="ic">🟩</span> New Lands</div>
+    <div class="nav-item" data-nav="apartments" onclick="showPage('apartments')"><span class="ic">🏢</span> Apartments</div>
+    <div class="nav-item" data-nav="houses" onclick="showPage('houses')"><span class="ic">🏘️</span> Individual Houses</div>
+    <div class="nav-item" data-nav="shops" onclick="showPage('shops')"><span class="ic">🏬</span> Shops</div>
+    <div class="nav-item" data-nav="complexes" onclick="showPage('complexes')"><span class="ic">🏗️</span> Complexes</div>
+    <div class="nav-section-label">MY PROPERTIES</div>
+    <div class="nav-item" data-nav="myprops" onclick="showPage('myprops')"><span class="ic">📌</span> My Properties</div>
+    <div class="nav-section-label">TOOLS</div>
+    <div class="nav-item" data-nav="navigate" onclick="showPage('navigate')"><span class="ic">🧭</span> Find My Plot</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-wrap" id="search-wrap">
+        <input class="searchbar" id="global-search" placeholder="Search ULPIN, Aadhaar, owner or tenant name…" oninput="handleGlobalSearch(this.value)">
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <div class="userchip"><div class="av" id="userchip-av">GO</div><span id="userchip-label">Govt. Official · GO12345</span><span class="logout-link" onclick="logout()">Log out</span></div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" data-page="dashboard">
+        <div class="crumbs"><span class="cur">Dashboard</span></div>
+        <h1 class="page-title" id="dash-welcome">Welcome back</h1>
+        <p class="page-sub">Salem City · 125 acres tracked across 320 plots and 24 buildings</p>
+        <div class="grid cols-4" style="margin-bottom:18px;">
+          <div class="card stat"><div class="label">Total Area</div><div class="val">125 Acres</div></div>
+          <div class="card stat"><div class="label">Total Plots</div><div class="val">320</div></div>
+          <div class="card stat"><div class="label">Total Buildings</div><div class="val">24</div></div>
+          <div class="card stat"><div class="label">Portfolio Value</div><div class="val">₹256 Cr+</div></div>
+        </div>
+        <div class="card" style="margin-bottom:18px;">
+          <h4 style="margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;">
+            Fairlands, Salem — Area Snapshot
+            <button class="btn ghost sm" onclick="showPage('overview')">Open full map</button>
+          </h4>
+          <div id="dash-map"></div>
+        </div>
+        <div class="card" style="margin-bottom:18px;">
+          <h4 style="margin:0 0 12px;font-size:14px;">My Properties</h4>
+          <div class="grid cols-3" id="dash-myprops"></div>
+        </div>
+        <div class="card">
+          <h4 style="margin:0 0 4px;font-size:14px;">Sample Households — quick demo links</h4>
+          <p class="page-sub" style="margin:0 0 12px;">Jump straight to a fully-populated house record showing 2, 3, 4 and 6 residents living in one unit.</p>
+          <div class="grid cols-4" id="dash-sample-households"></div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW MAP -->
+      <div class="page" data-page="overview">
+        <div class="crumbs"><span class="cur">Overview Map</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div><h1 class="page-title">Area Overview</h1><p class="page-sub">Select an area, then click any building or plot to open its full details.</p></div>
+          <select class="sel" id="area-select" onchange="renderOverviewMap()"></select>
+        </div>
+        <div class="gmap-stage" id="overview-satellite-stage" style="height:280px;margin-bottom:16px;">
+          <div class="gmap-toolbar">
+            <button class="active" id="ov-map-btn" onclick="setOverviewMapMode('map')">🗺️ Map</button>
+            <button id="ov-sat-btn" onclick="setOverviewMapMode('satellite')">🛰️ Satellite</button>
+          </div>
+          <div class="gmap-badge-loc" id="overview-loc-badge">📍</div>
+        </div>
+        <div class="card" id="overview-about-card" style="margin-bottom:16px;"></div>
+        <div class="card">
+          <div class="type-chips" id="overview-chips">
+            <div class="chip active" onclick="setOverviewFilter(null,this)">All</div>
+            <div class="chip" onclick="setOverviewFilter('land',this)"><i class="swatch" style="background:#f5b559"></i>Lands</div>
+            <div class="chip" onclick="setOverviewFilter('apartment',this)"><i class="swatch" style="background:#8f97f5"></i>Apts</div>
+            <div class="chip" onclick="setOverviewFilter('shop',this)"><i class="swatch" style="background:#6fd99a"></i>Shops</div>
+            <div class="chip" onclick="setOverviewFilter('complex',this)"><i class="swatch" style="background:#a78bfa"></i>Complexes</div>
+          </div>
+          <div id="overview-map"></div>
+          <div class="map-legend">
+            <span><i class="swatch" style="background:#f5b559"></i> Land / Plot</span>
+            <span><i class="swatch" style="background:#8f97f5"></i> Apartment</span>
+            <span><i class="swatch" style="background:#6fd99a"></i> Shop</span>
+            <span><i class="swatch" style="background:#a78bfa"></i> Complex</span>
+            <span><i class="swatch" style="background:#22d3ee"></i> 🚇 Elevated Transit Corridor (click line for details)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- APARTMENTS -->
+      <div class="page" data-page="apartments">
+        <div class="crumbs"><span class="cur">Apartments</span></div>
+        <h1 class="page-title">Apartments</h1><p class="page-sub">All apartment buildings across tracked areas. Click one to see its 3D model, floors, units and residents.</p>
+        <div class="grid cols-3" id="apartments-list"></div>
+      </div>
+
+      <!-- INDIVIDUAL HOUSES — dedicated top-level page listing every house/unit -->
+      <div class="page" data-page="houses">
+        <div class="crumbs"><span class="cur">Individual Houses</span></div>
+        <h1 class="page-title">Individual Houses</h1>
+        <p class="page-sub">Every residential unit across all tracked apartment buildings. Click any house to open its full record — occupancy type, household size, member names, ages and relations.</p>
+        <div class="type-chips" id="houses-chips" style="margin-bottom:14px;">
+          <div class="chip active" onclick="setHousesFilter('all',this)">All Houses</div>
+          <div class="chip" onclick="setHousesFilter('occupied',this)">Occupied</div>
+          <div class="chip" onclick="setHousesFilter('vacant',this)">Vacant</div>
+        </div>
+        <div class="grid cols-3" id="houses-list"></div>
+      </div>
+
+      <!-- SHOPS -->
+      <div class="page" data-page="shops">
+        <div class="crumbs"><span class="cur">Shops</span></div>
+        <h1 class="page-title">Shops</h1><p class="page-sub">Commercial shop units across tracked areas.</p>
+        <div class="grid cols-3" id="shops-list"></div>
+      </div>
+
+      <!-- COMPLEXES -->
+      <div class="page" data-page="complexes">
+        <div class="crumbs"><span class="cur">Complexes</span></div>
+        <h1 class="page-title">Complexes</h1><p class="page-sub">Mixed-use shop &amp; office complexes.</p>
+        <div class="grid cols-3" id="complexes-list"></div>
+      </div>
+
+      <!-- LANDS -->
+      <div class="page" data-page="lands">
+        <div class="crumbs"><span class="cur">New Lands</span></div>
+        <h1 class="page-title">Land Layouts</h1><p class="page-sub">Plotted layouts. Open a layout to see every individual plot and its owner.</p>
+        <div class="grid cols-3" id="lands-list"></div>
+      </div>
+
+      <!-- LAND LAYOUT -->
+      <div class="page" data-page="landlayout">
+        <div class="crumbs"><a onclick="showPage('lands')">New Lands</a> &gt; <span class="cur" id="landlayout-crumb"></span></div>
+        <h1 class="page-title" id="landlayout-title"></h1><p class="page-sub" id="landlayout-sub"></p>
+        <div class="card" style="margin-bottom:16px;"><div id="landlayout-map"></div></div>
+        <div class="card">
+          <h4 style="margin:0 0 12px;font-size:14px;">All plots in this layout</h4>
+          <div class="unit-grid" id="landlayout-grid"></div>
+          <div class="map-legend">
+            <span><i class="swatch" style="background:#f5b559"></i> Vacant</span>
+            <span><i class="swatch" style="background:#dbe1f2"></i> Sold</span>
+            <span><i class="swatch" style="background:#8f97f5"></i> Yours</span>
+            <span>🚧 / 🚇 Upcoming government project nearby — may affect land rate</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <button class="land-nav-arrow" onclick="openLandMapView(currentLayout.id)">View Full Land Map →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAND MAP VIEW -->
+      <div class="page" data-page="landmapview">
+        <div class="crumbs"><a onclick="showPage('lands')">New Lands</a> &gt; <a id="landmapview-crumb-layout"></a> &gt; <span class="cur">Map View</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div><h1 class="page-title" id="landmapview-title"></h1><p class="page-sub" id="landmapview-sub"></p></div>
+          <button class="land-nav-arrow back" id="landmapview-back-btn">← Back to plot list</button>
+        </div>
+        <div class="card" id="landmapview-about-card" style="margin-bottom:16px;"></div>
+        <div class="card">
+          <div id="landmapview-map"></div>
+          <div class="map-legend">
+            <span><i class="swatch" style="background:#f5b559"></i> Vacant</span>
+            <span><i class="swatch" style="background:#dbe1f2"></i> Sold</span>
+            <span><i class="swatch" style="background:#8f97f5"></i> Yours</span>
+            <span>🚧 / 🚇 Highlighted zone — upcoming government project, may affect land rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLOT DETAIL -->
+      <div class="page" data-page="plotdetail">
+        <div class="crumbs"><a onclick="showPage('lands')">New Lands</a> &gt; <a id="plot-crumb-layout"></a> &gt; <span class="cur" id="plot-crumb"></span></div>
+        <div class="grid cols-2" style="align-items:start;">
+          <div class="card">
+            <h1 class="page-title" id="plot-title"></h1><p class="page-sub" id="plot-sub"></p>
+            <div class="row"><span>Plot Length</span><span id="plot-length"></span></div>
+            <div class="row"><span>Plot Width</span><span id="plot-width"></span></div>
+            <div class="row"><span>Total Area</span><span id="plot-area"></span></div>
+            <div class="row"><span>Facing</span><span id="plot-facing"></span></div>
+            <div class="row"><span>Status</span><span id="plot-status"></span></div>
+            <div style="margin-top:14px;display:flex;gap:10px;">
+              <button class="btn primary sm" onclick="openInFindPlot()">Find this plot on site</button>
+              <button class="btn ghost sm" id="plot-directions-btn">Get directions</button>
+            </div>
+          </div>
+          <div class="card resident-card" id="plot-owner-card"></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h4 style="margin:0 0 4px;font-size:14px;">🧱 Vertical Rights Snapshot</h4>
+          <p class="page-sub" style="margin:0 0 12px;">Even a single plot has more than one rights layer once you look above and below the surface.</p>
+          <div class="vlayer-stack" id="plot-vlayers"></div>
+        </div>
+        <div class="card" id="plot-amenities-card" style="margin-top:16px;"></div>
+      </div>
+
+      <!-- PROPERTY DETAIL -->
+      <div class="page" data-page="propdetail">
+        <div class="crumbs"><a id="prop-crumb-cat"></a> &gt; <span class="cur" id="prop-crumb"></span></div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:flex-start;">
+          <div><h1 class="page-title" id="prop-title"></h1><p class="page-sub" id="prop-sub"></p></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn primary sm" onclick="open3DModal()">View 3D Model</button>
+            <button class="btn ghost sm" onclick="openExplodedView('prop')">🏙️ Floor-by-Floor Breakdown →</button>
+            <button class="btn ghost sm" id="prop-directions-btn">Get directions</button>
+          </div>
+        </div>
+        <img class="photo-banner" id="prop-photo" src="" alt="Building photo" onerror="this.style.visibility='hidden'">
+        <div class="grid cols-4" style="margin:14px 0 18px;">
+          <div class="card stat"><div class="label">Floors</div><div class="val" id="prop-floors"></div></div>
+          <div class="card stat"><div class="label">Total Units</div><div class="val" id="prop-units"></div></div>
+          <div class="card stat"><div class="label">Plot Area</div><div class="val" id="prop-plotarea"></div></div>
+          <div class="card stat"><div class="label">Built-up</div><div class="val" id="prop-builtup"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:18px;">
+          <h4 style="margin:0 0 4px;font-size:14px;">🧱 Vertical Ownership Layers</h4>
+          <p class="page-sub" style="margin:0 0 12px;max-width:560px;">The core idea behind a 3D ULPIN — every layer above and below the surface gets its own addressable sub-parcel, instead of one flat footprint covering the whole plot. Click a layer.</p>
+          <div class="grid cols-2" style="align-items:start;gap:16px;">
+            <div class="vlayer-stack" id="prop-vlayers"></div>
+            <div class="card" id="prop-vlayer-detail" style="background:var(--panel-2);min-height:120px;">
+              <p class="page-sub" style="margin:0;">Click a layer on the left to see its sub-parcel ULPIN and what it represents.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="prop-landbreakdown" style="margin-bottom:18px;"></div>
+        <div class="tabs">
+          <div class="tab active" data-tab="floors" onclick="propTab('floors')">Floors</div>
+          <div class="tab" data-tab="units" onclick="propTab('units')">Units</div>
+          <div class="tab" data-tab="parking" onclick="propTab('parking')">🅿️ Parking</div>
+          <div class="tab" data-tab="residents" onclick="propTab('residents')">Residents</div>
+        </div>
+        <div id="prop-tab-floors" class="card"><div class="floor-list" id="prop-floorlist"></div></div>
+        <div id="prop-tab-units" class="card" style="display:none;"><div class="unit-grid" id="prop-unitgrid"></div></div>
+        <div id="prop-tab-parking" class="card" style="display:none;">
+          <div class="parking-legend-note">Every bay below carries its own sub-parcel ULPIN (e.g. <b id="parking-example-id">—</b>) and is linked to the unit that owns it — the kind of ownership record a conventional 2D land map has no way to represent.</div>
+          <div class="type-chips" id="parking-level-chips" style="margin-bottom:12px;"></div>
+          <div class="grid cols-4" id="prop-parkinggrid"></div>
+          <div class="map-legend" style="margin-top:14px;">
+            <span><i class="swatch" style="background:#6fd99a"></i> Allotted to a unit</span>
+            <span><i class="swatch" style="background:#f5b559"></i> Visitor bay</span>
+            <span><i class="swatch" style="background:#38bdf8"></i> EV charging bay</span>
+            <span><i class="swatch" style="background:#c7cede"></i> Unallotted</span>
+          </div>
+          <div id="prop-parking-detail" style="margin-top:14px;"></div>
+        </div>
+        <div id="prop-tab-residents" class="card" style="display:none;">
+          <p class="page-sub" id="prop-resident-hint">Select a unit in the Units tab to view its owner / tenant / lease details here.</p>
+          <div id="prop-resident-detail"></div>
+        </div>
+      </div>
+
+      <!-- SHOP DETAIL -->
+      <div class="page" data-page="shopdetail">
+        <div class="crumbs"><a onclick="showPage('shops')">Shops</a> &gt; <span class="cur" id="shop-crumb"></span></div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:flex-start;">
+          <div><h1 class="page-title" id="shop-title"></h1><p class="page-sub" id="shop-sub"></p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn primary sm" onclick="open3DModalShop()">View 3D Model</button>
+            <button class="btn ghost sm" onclick="openExplodedView('shop')">🏙️ Floor-by-Floor Breakdown →</button>
+          </div>
+        </div>
+        <img class="photo-banner" id="shop-photo" src="" alt="Shop photo" onerror="this.style.visibility='hidden'">
+        <div class="grid cols-2" style="align-items:start;">
+          <div class="card">
+            <div class="row"><span>Shop Area</span><span id="shop-area"></span></div>
+            <div class="row"><span>Frontage</span><span id="shop-frontage"></span></div>
+            <div class="row"><span>Usage</span><span id="shop-usage"></span></div>
+            <div class="row"><span>Status</span><span id="shop-status"></span></div>
+            <div class="row"><span>Ownership</span><span id="shop-ownership"></span></div>
+            <div style="margin-top:14px;"><button class="btn ghost sm" id="shop-directions-btn">Get directions</button></div>
+          </div>
+          <div class="card resident-card" id="shop-owner-card"></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h4 style="margin:0 0 4px;font-size:14px;">🅿️ Allotted Parking Bays</h4>
+          <p class="page-sub" style="margin:0;">Surface bays right outside the shop frontage, each with its own sub-parcel ULPIN.</p>
+          <div class="shop-parking-row" id="shop-parking-row"></div>
+        </div>
+      </div>
+
+      <!-- INDIVIDUAL HOUSE DETAIL -->
+      <div class="page" data-page="housedetail">
+        <div class="crumbs"><a id="house-crumb-building"></a> &gt; <span class="cur" id="house-crumb-unit"></span></div>
+        <h1 class="page-title" id="house-title"></h1><p class="page-sub" id="house-sub"></p>
+        <div style="margin:-6px 0 14px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn primary sm" onclick="open3DModalHouse()">View 3D House Model</button>
+          <button class="btn ghost sm" onclick="openExplodedView('house')">🧭 Room-wise Land Breakdown →</button>
+        </div>
+        <div class="house-hero">
+          <img id="house-photo" src="" alt="House photo" onerror="this.style.visibility='hidden'">
+          <div class="card">
+            <h4 style="margin:0 0 12px;font-size:14px;">Household Summary</h4>
+            <div class="row"><span>Occupancy</span><span id="house-occtype"></span></div>
+            <div class="row"><span>🅿️ Allotted Parking Bay</span><span id="house-parking"></span></div>
+            <div style="margin:14px 0 4px;" id="house-headcount"></div>
+            <h4 style="margin:18px 0 8px;font-size:13.5px;">People living in this house</h4>
+            <div class="household-list" id="house-members"></div>
+          </div>
+        </div>
+        <div class="card" id="house-landbreakdown" style="margin-top:16px;"></div>
+        <div class="grid cols-2" style="margin-top:16px;align-items:start;">
+          <div class="card resident-card" id="house-contact-card"></div>
+          <div class="card">
+            <h4 style="margin:0 0 10px;font-size:14px;">Note</h4>
+            <p class="page-sub" style="margin:0;">Household member details are for demonstration purposes on this ULPIN prototype and are generated for illustration, not sourced from a live civil registry.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPLODED / FLOOR-BY-FLOOR BREAKDOWN VIEW -->
+      <div class="page" data-page="explodedview">
+        <div class="crumbs"><a onclick="explodedBackAction && explodedBackAction()">← Back</a> &gt; <span class="cur">Floor-by-Floor Breakdown</span></div>
+        <h1 class="page-title" id="exploded-title"></h1>
+        <p class="page-sub" id="exploded-sub"></p>
+        <div class="card" style="padding:14px;">
+          <div class="chips" style="margin-bottom:4px;">
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#c9b48a"></i> Individually titled unit</span>
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#8a94ab"></i> Vacant unit</span>
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#f5b559"></i> Entrance / ground common</span>
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#5eead4"></i> Terrace / common area</span>
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#38bdf8"></i> Basement parking</span>
+            <span class="chip" style="cursor:default;"><i class="swatch" style="background:#a78bfa"></i> Air rights (unbuilt)</span>
+          </div>
+          <div id="exploded-svg-wrap" style="overflow:auto;"></div>
+          <p class="page-sub" style="margin:8px 0 0;">Click any unit block to see its individual sub-parcel ULPIN.</p>
+        </div>
+      </div>
+
+      <!-- MY PROPERTIES -->
+      <div class="page" data-page="myprops">
+        <div class="crumbs"><span class="cur">My Properties</span></div>
+        <h1 class="page-title">My Properties</h1><p class="page-sub">Everything registered under your Aadhaar-linked profile.</p>
+        <div class="grid cols-3" id="myprops-list"></div>
+      </div>
+
+      <!-- FIND MY PLOT -->
+      <div class="page" data-page="navigate">
+        <div class="crumbs"><span class="cur">Find My Plot</span></div>
+        <h1 class="page-title">Find My Plot</h1>
+        <p class="page-sub">Standing at a layout with dozens of look-alike plots? Pick your property below — the map highlights exactly which one is yours.</p>
+        <div class="findplot-wrap">
+          <div class="card">
+            <select class="sel" id="nav-select" onchange="renderNavPlot()" style="margin-bottom:14px;width:100%;"></select>
+            <div id="nav-map"></div>
+          </div>
+          <div class="card">
+            <h4 style="margin:0 0 4px;font-size:14px;" id="nav-plot-name">—</h4>
+            <p class="page-sub" style="margin-bottom:14px;" id="nav-plot-addr">—</p>
+            <div class="compass" id="nav-compass">↗</div>
+            <div class="distance-box">
+              <div class="d-item"><div class="d-val" id="nav-distance">—</div><div class="d-label">Distance to plot</div></div>
+              <div class="d-item"><div class="d-val" id="nav-time">—</div><div class="d-label">Est. walk time</div></div>
+            </div>
+            <button class="btn primary" style="width:100%;" id="nav-start-btn">Start outdoor navigation</button>
+            <div class="note">Highlights your plot among the others in the layout and gives real GPS directions to the site from wherever you are. Exact-peg accuracy inside the layout needs surveyed corner points or a physical marker — a browser alone can't do that.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 3D MODAL -->
+<div class="modal-overlay" id="modal3d">
+  <div class="modal-box">
+    <button class="close" onclick="close3DModal()">✕</button>
+    <h3 style="margin:0 0 4px;" id="modal3d-title">3D Building Model</h3>
+    <p class="page-sub" id="modal3d-sub">Drag to rotate, or use auto-rotate</p>
+    <div class="stage" id="stage3d">
+      <div class="building3d" id="building3d"></div>
+      <div class="ground-shadow"></div>
+      <div class="stage-controls"><button class="btn ghost sm" onclick="autoRotate360()">⟳ Auto-rotate 360°</button></div>
+      <div class="stage-hint">Drag to rotate</div>
+    </div>
+    <div class="grid cols-4" style="margin-top:14px;">
+      <div class="card stat"><div class="label">Footprint</div><div class="val" id="modal3d-footprint"></div></div>
+      <div class="card stat"><div class="label">Total Height</div><div class="val" id="modal3d-height"></div></div>
+      <div class="card stat"><div class="label">Floors</div><div class="val" id="modal3d-floors"></div></div>
+      <div class="card stat"><div class="label">🅿️ Parking Bays</div><div class="val" id="modal3d-parking"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GOVERNMENT AMENITIES MODAL (New Lands) -->
+<div class="modal-overlay" id="modal-amenities">
+  <div class="modal-box" style="max-width:440px;">
+    <button class="close" onclick="closeAmenitiesModal()">✕</button>
+    <h3 style="margin:0 0 4px;">🏛️ Nearby Government Amenities</h3>
+    <p class="page-sub" id="amenities-sub">Plot</p>
+    <div id="amenities-content"></div>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   BUILDING ART — small isometric SVG icons used on cards + map markers
+====================================================================== */
+let _isoSeq = 0;
+function isoBuilding(type, w=140, h=126){
+  // Detailed inline isometric "rendering" of a building, viewBox 0 0 140 126.
+  // Drawn locally (no external image request) so it always renders — reliable even offline, e.g. during a demo.
+  const uid = 'iso'+(_isoSeq++);
+  const palettes = {
+    apartment:{front:'#5570a8', side:'#37477a', roof:'#7688c2', win:'#ffe08a', winDark:'#3a4666', wall:'#dfe6f2'},
+    complex:  {front:'#6a5cae', side:'#443a7d', roof:'#9686d8', win:'#ffe08a', winDark:'#3a3562', wall:'#e6e1f5'},
+    shop:     {front:'#2f8a63', side:'#1f5a3f', roof:'#3fa377', win:'#cdeee0', winDark:'#164a34', wall:'#f4efe2'},
+    land:     {front:'#8a6a2f', side:'#5f4a1f', roof:'#c99a3f', win:'#e9d8a6', winDark:'#5f4a1f', wall:'#efe3c3'}
+  };
+  const c = palettes[type] || palettes.apartment;
+
+  if(type==='land'){
+    return `<svg viewBox="0 0 140 126" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="70" cy="80" rx="58" ry="14" fill="rgba(0,0,0,.28)"/>
+      <polygon points="20,60 70,35 120,60 70,90" fill="#dbe1f2" stroke="#aab4d9"/>
+      <line x1="45" y1="47" x2="45" y2="77" stroke="#aab4d9"/>
+      <line x1="95" y1="47" x2="95" y2="77" stroke="#aab4d9"/>
+      <line x1="20" y1="60" x2="120" y2="60" stroke="#aab4d9"/>
+      <circle cx="33" cy="70" r="4" fill="#3fa377"/>
+      <circle cx="108" cy="52" r="4" fill="#3fa377"/>
+      <rect x="19" y="59" width="3" height="3" fill="#c99a3f"/><rect x="118" y="59" width="3" height="3" fill="#c99a3f"/>
+      <rect x="66" y="20" width="3" height="20" fill="#c99a3f"/>
+      <polygon points="69,20 69,28 82,24" fill="#e9534a"/>
+    </svg>`;
+  }
+
+  if(type==='shop'){
+    // single-storey storefront: awning, signboard, glass display, shutter, footpath
+    const signColors=['#e9534a','#f5b559','#6fd99a','#8f97f5','#0ea5e9'];
+    const sign = signColors[hashStr(String(w+h)+type)%signColors.length] || signColors[0];
+    return `<svg viewBox="0 0 140 126" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="${uid}f" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${c.wall}"/><stop offset="100%" stop-color="${c.front}"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="70" cy="98" rx="52" ry="8" fill="rgba(0,0,0,.32)"/>
+      <rect x="10" y="90" width="120" height="8" fill="#28324a"/>
+      <polygon points="30,88 30,50 74,36 74,74" fill="url(#${uid}f)"/>
+      <polygon points="74,74 74,36 100,44 100,82" fill="${c.side}"/>
+      <polygon points="30,50 74,36 100,44 56,58" fill="${c.roof}"/>
+      <polygon points="26,52 74,36 100,44 84,50 68,42 30,55" fill="${sign}"/>
+      <rect x="35" y="53" width="20" height="3" rx="1.4" fill="#fff" opacity=".9"/>
+      <rect x="35" y="58" width="13" height="2.2" rx="1" fill="#fff" opacity=".55"/>
+      <rect x="34" y="63" width="34" height="18" fill="${c.winDark}"/>
+      <rect x="34" y="63" width="34" height="18" fill="${c.win}" opacity=".55"/>
+      <line x1="51" y1="63" x2="51" y2="81" stroke="#8a94a8" stroke-width="1"/>
+      <polygon points="34,63 45,63 40,72" fill="#ffffff" opacity=".18"/>
+      <rect x="73" y="46" width="6" height="30" fill="${c.winDark}" opacity=".8"/>
+      <rect x="82" y="49" width="6" height="27" fill="${c.winDark}" opacity=".55"/>
+      <g stroke="#1c2740" stroke-width="1.1" opacity=".65">
+        <line x1="34" y1="85" x2="68" y2="85"/><line x1="34" y1="88" x2="68" y2="88"/>
+      </g>
+      <rect x="28" y="88" width="8" height="4" fill="#5a4632"/>
+      <rect x="18" y="86" width="9" height="12" rx="1" fill="#8a94ab"/><rect x="20" y="88" width="5" height="4" fill="#c9d4ea" opacity=".8"/>
+    </svg>`;
+  }
+
+  // apartment / complex: multi-floor tower with balconies, lit windows, rooftop tank
+  const floors = type==='complex' ? 4 : 6;
+  const topY = 20, baseY = 96;
+  const bH = (baseY-topY)/floors;
+  let frontWin='', sideWin='', balconies='';
+  for(let f=0; f<floors; f++){
+    const y = baseY - (f+1)*bH;
+    const lit = (fi)=> (hashStr(type+f+fi+w+h)%3!==0);
+    for(let wi=0; wi<3; wi++){
+      const x = 33 + wi*11.3;
+      frontWin += `<rect x="${x}" y="${y+bH*0.22}" width="7.6" height="${bH*0.5}" rx="1" fill="${lit(wi)?c.win:c.winDark}" opacity="${lit(wi)?0.95:0.8}"/>`;
+    }
+    balconies += `<line x1="30" y1="${y+bH*0.85}" x2="74" y2="${y+bH*0.85-6}" stroke="#1c2740" stroke-width="1" opacity=".4"/>`;
+    sideWin += `<rect x="80" y="${y+bH*0.2}" width="6" height="${bH*0.5}" rx="1" fill="${lit(f)?c.win:c.winDark}" opacity=".5"/>`;
+  }
+  return `<svg viewBox="0 0 140 126" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${uid}f" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${c.wall}" stop-opacity=".9"/><stop offset="100%" stop-color="${c.front}"/>
+      </linearGradient>
+      <linearGradient id="${uid}s" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="${c.side}"/><stop offset="100%" stop-color="#1c2740"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="66" cy="${baseY+6}" rx="50" ry="8" fill="rgba(0,0,0,.32)"/>
+    <rect x="14" y="${baseY}" width="104" height="6" fill="#28324a"/>
+    <circle cx="20" cy="${baseY+2}" r="5" fill="#1f6b46"/><circle cx="112" cy="${baseY+3}" r="4" fill="#1f6b46"/>
+    <polygon points="30,${baseY} 30,${topY} 74,${topY-14} 74,${baseY-14}" fill="url(#${uid}f)"/>
+    <polygon points="74,${baseY-14} 74,${topY-14} 100,${topY-2} 100,${baseY-2}" fill="url(#${uid}s)"/>
+    <polygon points="30,${topY} 74,${topY-14} 100,${topY-2} 56,${topY+12}" fill="${c.roof}"/>
+    ${frontWin}
+    ${balconies}
+    ${sideWin}
+    <rect x="44" y="${topY-6}" width="10" height="6" fill="#8a94b8"/>
+    <rect x="47" y="${topY-11}" width="1.4" height="6" fill="#8a94b8"/>
+    <rect x="45" y="${baseY-9}" width="9" height="9" fill="#aab4c8"/><rect x="47" y="${baseY-9}" width="5" height="9" fill="#8a94a8"/>
+  </svg>`;
+}
+
+/* ======================================================================
+   BUILDING BANNER SCENE — large frontal "rendering" used on detail pages
+   whenever a real photo isn't available/loads. Pure SVG, always renders.
+====================================================================== */
+function buildingBannerSVG(type, w=900, h=280){
+  const uid = 'ban'+(_isoSeq++);
+  const palettes = {
+    apartment:{front:'#5570a8', side:'#37477a', roof:'#7688c2', win:'#ffe08a', winDark:'#2c3557', wall:'#dfe6f2'},
+    complex:  {front:'#6a5cae', side:'#443a7d', roof:'#9686d8', win:'#ffe08a', winDark:'#2c2a4d', wall:'#e6e1f5'},
+    shop:     {front:'#2f8a63', side:'#1f5a3f', roof:'#3fa377', win:'#cdeee0', winDark:'#123626', wall:'#f4efe2'}
+  };
+  const c = palettes[type] || palettes.apartment;
+  const bw = w*0.5, bx = w*0.5-bw/2, by = h*0.14, bh = h*0.72;
+  const floors = type==='shop' ? 1 : (type==='complex' ? 5 : 7);
+  const cols = type==='shop' ? 4 : 5;
+  const fH = bh/floors;
+  let windows='';
+  for(let f=0; f<floors; f++){
+    for(let col=0; col<cols; col++){
+      const x = bx + bw*0.08 + col*(bw*0.84/cols);
+      const y = by + f*fH + fH*0.22;
+      const ww = (bw*0.84/cols)*0.62, wh = fH*0.5;
+      const lit = hashStr(type+f+col+'banner')%3!==0;
+      windows += `<rect x="${x}" y="${y}" width="${ww}" height="${wh}" rx="2" fill="${lit?c.win:c.winDark}" opacity="${lit?0.95:0.85}"/>`;
+      if(type!=='shop') windows += `<line x1="${x-4}" y1="${y+wh+fH*0.14}" x2="${x+ww+4}" y2="${y+wh+fH*0.14}" stroke="#1c2740" stroke-width="1.4" opacity=".35"/>`;
+    }
+  }
+  // background skyline (soft, distant, adds depth/realism)
+  let sky='';
+  for(let i=0;i<7;i++){
+    const bwi = 40+((i*37)%70), bhi = 60+((i*53)%140);
+    const bxi = (i*140+ (hashStr('sky'+i+type)%60));
+    sky += `<rect x="${bxi}" y="${h*0.62-bhi}" width="${bwi}" height="${bhi}" fill="#a9b8d6" opacity=".5"/>`;
+  }
+  // ground scene: road, pavement, trees, cars
+  let trees='';
+  for(let i=0;i<6;i++){
+    const tx = 20+i*(w-40)/5 + (hashStr('tree'+i)%20);
+    trees += `<g transform="translate(${tx},${h*0.9})"><rect x="-2" y="0" width="4" height="16" fill="#5a4632"/><circle cx="0" cy="-6" r="12" fill="#1f6b46"/><circle cx="-8" cy="0" r="9" fill="#256b48"/><circle cx="8" cy="0" r="9" fill="#256b48"/></g>`;
+  }
+  const shopExtras = type==='shop' ? `
+    <polygon points="${bx-14},${by+fH*0.42} ${bx+bw+14},${by+fH*0.42} ${bx+bw+4},${by+fH*0.72} ${bx-4},${by+fH*0.72}" fill="#e9534a"/>
+    <g opacity=".85">${Array.from({length:9}).map((_,i)=>`<rect x="${bx-14+i*((bw+28)/9)}" y="${by+fH*0.42}" width="${(bw+28)/18}" height="${fH*0.3}" fill="${i%2?'#ffffff':'#c23f38'}"/>`).join('')}</g>
+    <rect x="${bx+bw*0.32}" y="${by+bh*0.78}" width="${bw*0.36}" height="${bh*0.22}" fill="#123626"/>
+    <rect x="${bx+bw*0.32}" y="${by+bh*0.78}" width="${bw*0.36}" height="${bh*0.14}" fill="${c.win}" opacity=".5"/>` : `
+    <rect x="${bx+bw*0.42}" y="${by+bh*0.82}" width="${bw*0.16}" height="${bh*0.18}" fill="#c3cce3"/>
+    <polygon points="${bx+bw*0.40},${by+bh*0.82} ${bx+bw*0.6},${by+bh*0.82} ${bx+bw*0.6-8},${by+bh*0.74} ${bx+bw*0.40+8},${by+bh*0.74}" fill="${c.roof}"/>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="${uid}sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#cfe3fb"/><stop offset="100%" stop-color="#eef6ff"/>
+      </linearGradient>
+      <linearGradient id="${uid}f" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${c.wall}"/><stop offset="100%" stop-color="${c.front}"/>
+      </linearGradient>
+    </defs>
+    <rect width="${w}" height="${h}" fill="url(#${uid}sky)"/>
+    <circle cx="${w*0.86}" cy="${h*0.16}" r="26" fill="#ffffff" opacity=".45"/>
+    ${sky}
+    <rect x="0" y="${h*0.86}" width="${w}" height="${h*0.14}" fill="#ccd4e8"/>
+    <rect x="0" y="${h*0.895}" width="${w}" height="4" fill="#8b93b0" opacity=".6"/>
+    ${trees}
+    <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="url(#${uid}f)"/>
+    <rect x="${bx+bw}" y="${by+bh*0.08}" width="${bw*0.09}" height="${bh*0.92}" fill="${c.side}"/>
+    <polygon points="${bx-6},${by} ${bx+bw+6},${by} ${bx+bw*0.5},${by-h*0.07}" fill="${c.roof}"/>
+    ${windows}
+    ${shopExtras}
+    <ellipse cx="${bx+bw*0.5}" cy="${h*0.895}" rx="${bw*0.62}" ry="${h*0.02}" fill="rgba(0,0,0,.35)"/>
+  </svg>`;
+}
+function setPhotoOrFallback(imgId, photoUrl, type, name){
+  const el = document.getElementById(imgId);
+  if(!el) return;
+  el.onerror = null;
+  el.onerror = function(){
+    this.outerHTML = `<div class="photo-banner photo-fallback" style="position:relative;">${buildingBannerSVG(type)}<span class="fallback-tag">${name||''}</span></div>`;
+  };
+  el.src = photoUrl || '__none__'; // force onerror path if no real photo, producing the illustrated fallback
+}
+
+/* ======================================================================
+   SYNTHETIC RESIDENT / OWNER DATA GENERATOR (so every unit has full detail)
+====================================================================== */
+const FIRST_NAMES=['Arvind','Vignesh','Karthik','Meena','Priya','Suresh','Divya','Ramesh','Lakshmi','Anand','Kavya','Manoj','Deepa','Senthil','Revathi','Bala','Nithya','Prakash','Sowmya','Vikram'];
+const LAST_NAMES=['Kumar','Raman','Iyer','Murugan','Chandran','Pillai','Raj','Narayan','Subramani','Venkatesh'];
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+function genPerson(seed){
+  const h = hashStr(seed);
+  const name = FIRST_NAMES[h%FIRST_NAMES.length]+' '+LAST_NAMES[(h>>3)%LAST_NAMES.length];
+  const aadhaar = `${1000+h%9000} ${1000+(h>>4)%9000} ${1000+(h>>8)%9000}`;
+  const mobile = '9'+String(100000000+(h%800000000)).padStart(9,'0');
+  const email = name.toLowerCase().replace(' ','.')+'@email.com';
+  return {name, aadhaar, mobile, email, h};
+}
+function genOwner(seed, idPrefix){
+  const p = genPerson(seed+':owner');
+  return {...p, id: idPrefix+String(100000+(p.h%899999)).slice(0,6), address:'Salem, Tamil Nadu'};
+}
+function genTenant(seed){
+  const p = genPerson(seed+':tenant');
+  const startYear = 2023+(p.h%3), startMonth = 1+(p.h%12);
+  const start = `${String(startMonth).padStart(2,'0')}-${startYear}`;
+  return {...p, id:'TEN'+String(200000+(p.h%99999)).slice(0,6), start:'01-'+start, end:'31-'+(startMonth<=9?startMonth+3:3)+'-'+(startYear+1)};
+}
+function genLease(seed, tenantName){
+  const p = genPerson(seed+':lease');
+  const firms=['SLM Developers','Kaveri Estates','Vellore Infra Co.','Salem Realty Partners','Anna Nagar Holdings'];
+  const dur = 5+(p.h%6);
+  const startYear = 2018+(p.h%6);
+  const id = 'LEA'+String(300000+(p.h%99999)).slice(0,6);
+  const holder = tenantName || firms[p.h%firms.length];
+  const purpose = p.h%2===0?'Commercial':'Residential';
+  return {holder, aadhaar:p.aadhaar, id,
+    start:`15-01-${startYear}`, end:`14-01-${startYear+dur}`, duration:dur+' Years', purpose,
+    agreementDesc:`This lease lets ${holder} occupy the unit for ${purpose.toLowerCase()} use over a fixed ${dur}-year term.`
+      +`\nRent, maintenance and renewal terms follow the registered lease deed ${id}.`};
+}
+const RELATIONS_POOL=['Spouse','Son','Daughter','Father','Mother','Brother','Sister','Grandmother','Grandfather'];
+function genHousehold(seed, headName){
+  const h = hashStr(seed+':household');
+  const size = 1 + (h%5); // 1 to 5 additional info -> total people = size+1 (head + members)
+  const members = [{name: headName, relation:'Head of Household', age: 32 + (h%28)}];
+  for(let i=0;i<size;i++){
+    const mp = genPerson(seed+':member:'+i);
+    const relation = RELATIONS_POOL[(h>>(i+2))%RELATIONS_POOL.length];
+    const age = relation==='Son'||relation==='Daughter' ? 2+((h>>(i+4))%23) : 24+((h>>(i+6))%55);
+    members.push({name: mp.name, relation, age});
+  }
+  return {totalMembers: members.length, members};
+}
+/* Curated demo households — fixed (not hash-random) so the 2 / 3 / 4 / 6 person
+   examples are reliable and repeatable for presentations. Reachable directly
+   via the "Sample Households" panel on the dashboard. */
+const DEMO_HOUSEHOLDS = {
+  'apt-lakeview-1st Floor-101': { // 2 people — young couple
+    owner:{name:'Mrs. Divya Chandran', id:'OWN104412', aadhaar:'3321 6654 8890', mobile:'9845123367', email:'divya.chandran@email.com', address:'Unit 101, Lakeview Residency, Hasthampatti, Salem'},
+    household:{totalMembers:2, members:[
+      {name:'Mrs. Divya Chandran', relation:'Head of Household', age:29},
+      {name:'Mr. Senthil Chandran', relation:'Spouse', age:31}
+    ]}
+  },
+  'apt-sunrise-heights-2nd Floor-201': { // 3 people — nuclear family
+    owner:{name:'Mr. Prakash Iyer', id:'OWN108845', aadhaar:'4432 7765 9901', mobile:'9786541230', email:'prakash.iyer@email.com', address:'Unit 201, Sunrise Heights, Fairlands, Salem'},
+    household:{totalMembers:3, members:[
+      {name:'Mr. Prakash Iyer', relation:'Head of Household', age:38},
+      {name:'Mrs. Kavya Iyer', relation:'Spouse', age:35},
+      {name:'Miss. Nithya Iyer', relation:'Daughter', age:9}
+    ]}
+  },
+  'apt-silver-oak-1st Floor-101': { // 4 people — family of four
+    owner:{name:'Mr. Manoj Subramani', id:'OWN112290', aadhaar:'5543 8876 0012', mobile:'9900112233', email:'manoj.subramani@email.com', address:'Unit 101, Silver Oak Apartments, Five Roads, Salem'},
+    household:{totalMembers:4, members:[
+      {name:'Mr. Manoj Subramani', relation:'Head of Household', age:42},
+      {name:'Mrs. Sowmya Subramani', relation:'Spouse', age:39},
+      {name:'Master. Bala Subramani', relation:'Son', age:13},
+      {name:'Miss. Revathi Subramani', relation:'Daughter', age:8}
+    ]}
+  },
+  'apt-palm-residency-1st Floor-101': { // 6 people — joint family
+    owner:{name:'Mr. Ramesh Pillai', id:'OWN116631', aadhaar:'6654 9987 1123', mobile:'9911223344', email:'ramesh.pillai@email.com', address:'Unit 101, Palm Residency, Attur Main Road, Salem'},
+    household:{totalMembers:6, members:[
+      {name:'Mr. Ramesh Pillai', relation:'Head of Household', age:52},
+      {name:'Mrs. Lakshmi Pillai', relation:'Spouse', age:48},
+      {name:'Mr. Anand Pillai', relation:'Father', age:76},
+      {name:'Mrs. Meena Pillai', relation:'Mother', age:71},
+      {name:'Mr. Vikram Pillai', relation:'Son', age:22},
+      {name:'Miss. Deepa Pillai', relation:'Daughter', age:17}
+    ]}
+  }
+};
+/* Curated demo commercial units — fixed (not hash-random) so the "owner-run"
+   vs "owner-owned & rented" patterns are reliable and repeatable for
+   presentations, on both standalone Shops and Complex/Shop units. */
+const SHOP_DEMO_DETAILS = {
+  // Example 1: Shop is owner-owned AND run by the owner personally — no tenant, no lease.
+  'shop-balaji-stores': {
+    occupancy:'owner-run',
+    owner:{name:'Mr. Balamurugan S', id:'OWN109344', aadhaar:'2211 4433 6655', mobile:'9865123409', email:'balamurugan.s@email.com', address:'Attur Main Road, Salem'}
+  },
+  'shop-yesh-computers': {
+    occupancy:'owner-run',
+    owner:{name:'Mr. Yeswanth Raja', id:'OWN107762', aadhaar:'1188 2299 3300', mobile:'9843321177', email:'yeswanth.raja@email.com', address:'Fairlands, Salem'}
+  },
+  // Example 2: Shop is owner-owned but rented out to a lessee who runs the business.
+  'shop-megamart': {
+    occupancy:'rented',
+    owner:{name:'Mr. Elango Raj', id:'OWN105521', aadhaar:'4455 7788 9900', mobile:'9840112233', email:'elango.raj@email.com', address:'Five Roads, Salem'},
+    tenant:{name:'M/s. Mega Retail Ventures Pvt Ltd', id:'TEN204471', mobile:'9994321100', email:'admin@megaretail.in', start:'01-04-2022', end:'31-03-2032'},
+    lease:{holder:'M/s. Mega Retail Ventures Pvt Ltd', id:'LEA309912', start:'01-04-2022', end:'31-03-2032', duration:'10 Years', purpose:'Commercial — Retail Supermarket',
+      agreementDesc:'Mega Mart operates under a 10-year commercial lease taken from the property owner, renewable by mutual consent.\nThe lessee pays fixed monthly rent plus a share of common-area maintenance (CAM) charges as per the registered lease deed LEA309912.'}
+  },
+  'shop-fresh-mart': {
+    occupancy:'rented',
+    owner:{name:'Mrs. Kalpana Murthy', id:'OWN106230', aadhaar:'6677 8899 0011', mobile:'9865400221', email:'kalpana.murthy@email.com', address:'Hasthampatti, Salem'},
+    tenant:{name:'Mr. Sundar Pandian', id:'TEN203390', mobile:'9884455621', email:'sundar.pandian@email.com', start:'01-02-2023', end:'31-01-2026'},
+    lease:{holder:'Mr. Sundar Pandian', id:'LEA304587', start:'01-02-2023', end:'31-01-2026', duration:'3 Years', purpose:'Commercial — Retail (Vegetables)',
+      agreementDesc:'The owner has rented out this shop to Mr. Sundar Pandian for a 3-year term to run a vegetable retail business.\nRent is payable monthly with a security deposit held under the registered lease deed LEA304587.'}
+  }
+};
+const COMPLEX_DEMO_DETAILS = {
+  // Ground Floor unit in Sunrise Complex: owner-owned and run by the owner.
+  'cmplx-sunrise-Ground Floor-G01': {
+    occupancy:'owner-run',
+    owner:{name:'Mr. Selvam K', id:'OWN110098', aadhaar:'3345 6677 8899', mobile:'9876012345', email:'selvam.k@email.com', address:'Hasthampatti, Salem'}
+  },
+  // 1st Floor unit in Sunrise Complex: owner-owned but rented out to a lessee/tenant business.
+  'cmplx-sunrise-1st Floor-101': {
+    occupancy:'rented',
+    owner:{name:'Mrs. Kalpana R', id:'OWN110220', aadhaar:'5566 7788 9900', mobile:'9840099887', email:'kalpana.r@email.com', address:'Hasthampatti, Salem'},
+    tenant:{name:'M/s. Bright Future Consultancy', id:'TEN205511', mobile:'9994455667', email:'contact@brightfuture.in', start:'01-01-2023', end:'31-12-2028'},
+    lease:{holder:'M/s. Bright Future Consultancy', id:'LEA310044', start:'01-01-2023', end:'31-12-2028', duration:'6 Years', purpose:'Commercial — Office',
+      agreementDesc:'This unit is leased to Bright Future Consultancy for office use under a 6-year commercial agreement.\nThe agreement includes a 5% annual rent escalation and standard upkeep obligations for the lessee.'}
+  }
+};
+function unitFullDetail(seed, occupied, commercial, occupancyType){
+  if(SHOP_DEMO_DETAILS[seed]) return SHOP_DEMO_DETAILS[seed];
+  if(COMPLEX_DEMO_DETAILS[seed]) return COMPLEX_DEMO_DETAILS[seed];
+  if(seed==='green-101'){
+    return {
+      owner:{name:'Mr. Arvind Kumar', id:'OWN100512', aadhaar:'1234 5678 9012', mobile:'9876543210', email:'arvind.kumar@email.com', address:'12, Green Street, Salem – 636001'},
+      tenant:{name:'Mr. Vignesh R', id:'TEN200781', aadhaar:'5678 1234 9012', mobile:'9123456780', email:'vignesh.r@email.com', start:'01-06-2024', end:'31-05-2025'},
+      lease:{holder:'M/s. SLM Developers', aadhaar:'9876 5432 1012', id:'LEA300655', start:'15-01-2023', end:'14-01-2033', duration:'10 Years', purpose:'Commercial'},
+      household: genHousehold(seed, 'Mr. Vignesh R')
+    };
+  }
+  if(DEMO_HOUSEHOLDS[seed]) return DEMO_HOUSEHOLDS[seed];
+  const owner = genOwner(seed, 'OWN');
+  const out = {owner};
+  if(commercial){
+    // Every commercial unit is either (a) owned AND run by the owner themself,
+    // or (b) owned by the owner but rented out to a separate tenant/lessee.
+    const type = occupancyType || (hashStr(seed+':occ')%2===0 ? 'owner-run' : 'rented');
+    out.occupancy = type;
+    if(occupied && type==='rented'){
+      out.tenant = genTenant(seed);
+      out.lease = genLease(seed, out.tenant.name);
+    }
+  } else {
+    if(occupied) out.tenant = genTenant(seed);
+    if(occupied) out.household = genHousehold(seed, (out.tenant||out.owner).name);
+  }
+  return out;
+}
+function residentCardHTML(d, title){
+  let html = `<h4 style="margin:0 0 12px;font-size:14px;">${title||'Owner Details'}</h4>`;
+  if(d.occupancy){
+    const label = d.occupancy==='owner-run' ? 'Owner-Occupied — Run by Owner' : 'Owner-Owned — Rented Out';
+    const tone = d.occupancy==='owner-run' ? '#6fd99a' : '#f5b559';
+    html += `<div class="row"><span>Occupancy Type</span><span style="color:${tone};font-weight:600;">${label}</span></div>`;
+  }
+  html += `<div class="row"><span>Name</span><span>${d.owner.name}</span></div>
+    <div class="row"><span>Owner ID</span><span>${d.owner.id}</span></div>
+    <div class="row"><span>Aadhaar No.</span><span>${d.owner.aadhaar}</span></div>
+    <div class="row"><span>Mobile</span><span>${d.owner.mobile}</span></div>
+    <div class="row"><span>Email</span><span>${d.owner.email}</span></div>
+    <div class="row"><span>Address</span><span>${d.owner.address}</span></div>
+    <span class="verified">✓ Aadhaar Verified</span>`;
+  if(d.occupancy==='owner-run'){
+    html += `<p class="page-sub" style="margin:12px 0 0;">This unit is owned and personally run by the owner — there is no tenant, lessee or lease agreement on record.</p>`;
+  }
+  if(d.tenant){
+    html += `<h4 style="margin:16px 0 10px;font-size:13.5px;">Tenant / Lessee Details</h4>
+      <div class="row"><span>Name</span><span>${d.tenant.name}</span></div>
+      <div class="row"><span>Tenant ID</span><span>${d.tenant.id}</span></div>
+      <div class="row"><span>Mobile</span><span>${d.tenant.mobile}</span></div>
+      <div class="row"><span>${d.lease?'Lease Start':'Rent Start'}</span><span>${d.tenant.start}</span></div>
+      <div class="row"><span>${d.lease?'Lease End':'Rent End'}</span><span>${d.tenant.end}</span></div>
+      <span class="verified">✓ Aadhaar Verified</span>`;
+  }
+  if(d.lease){
+    html += `<h4 style="margin:16px 0 10px;font-size:13.5px;">Lease Agreement Details</h4>
+      <div class="row"><span>Lease Holder</span><span>${d.lease.holder}</span></div>
+      <div class="row"><span>Lease ID</span><span>${d.lease.id}</span></div>
+      <div class="row"><span>Start Date</span><span>${d.lease.start}</span></div>
+      <div class="row"><span>End Date</span><span>${d.lease.end}</span></div>
+      <div class="row"><span>Duration</span><span>${d.lease.duration}</span></div>
+      <div class="row"><span>Purpose</span><span>${d.lease.purpose}</span></div>
+      <span class="verified">✓ Aadhaar Verified</span>
+      ${d.lease.agreementDesc ? `<p class="page-sub" style="margin:12px 0 0;white-space:pre-line;">${d.lease.agreementDesc}</p>` : ''}`;
+  }
+  return html;
+}
+
+/* ======================================================================
+   DATA
+====================================================================== */
+const AREAS = [
+  {id:'fairlands', name:'Fairlands, Salem', lat:11.6716, lng:78.1348,
+    about:'A central, well-planned residential locality close to Salem\'s main civic offices, with wide roads and a mix of independent houses and mid-rise apartments.',
+    landmarks:['Near Salem Collectorate','Convent Ground','Good mix of schools & clinics']},
+  {id:'attur', name:'Attur Main Road, Salem', lat:11.6789, lng:78.1502,
+    about:'The arterial road connecting Salem city to Attur taluk — a fast-growing corridor with new residential layouts and highway-facing commercial plots.',
+    landmarks:['Salem–Attur highway frontage','Upcoming flyover stretch','Mixed residential + roadside commercial']},
+  {id:'hasthampatti', name:'Hasthampatti, Salem', lat:11.6690, lng:78.1600,
+    about:'One of Salem\'s busiest residential-cum-commercial hubs, close to the New Bus Stand, with dense apartment construction and established markets.',
+    landmarks:['Near Salem New Bus Stand','Established residential blocks','Government General Hospital vicinity']},
+  {id:'fiveroads', name:'Five Roads, Salem', lat:11.6564, lng:78.1652,
+    about:'A major traffic junction and retail hub in the heart of the city, where several arterial roads converge — mostly shops and mixed-use complexes.',
+    landmarks:['Busy 5-way road junction','Dense retail frontage','High footfall commercial belt']},
+  {id:'suramangalam', name:'Suramangalam, Salem', lat:11.6975, lng:78.1272,
+    about:'A large residential suburb on the western side of the city, close to the Salem Junction railway line, with a growing number of gated apartment blocks.',
+    landmarks:['Near Salem Junction railway line','Residential layouts','Local schools & bus routes']},
+  {id:'ammapet', name:'Ammapet, Salem', lat:11.6462, lng:78.1668,
+    about:'An established residential-industrial locality on the eastern side of Salem, historically linked to the leather and tanning trade, now increasingly residential.',
+    landmarks:['Industrial belt nearby','Older residential streets','Local markets']},
+  {id:'shevapet', name:'Shevapet, Salem', lat:11.6722, lng:78.1487,
+    about:'One of the oldest commercial quarters of Salem, known for its wholesale market streets, with residential lanes tucked just behind the main bazaar.',
+    landmarks:['Old wholesale market street','Dense shop-house mix','Narrow heritage lanes']},
+  {id:'alagapuram', name:'Alagapuram, Salem', lat:11.6832, lng:78.1583,
+    about:'A quieter, primarily residential locality on the northern edge of the city core, popular with families for its relatively lower density.',
+    landmarks:['Low-rise residential streets','Neighbourhood parks','Local schools']},
+];
+/* Live Google Maps embed for a real map/satellite view of an area — this
+   "output=embed" form needs no API key. t=k renders the satellite/hybrid layer. */
+function areaMapEmbedUrl(area, mode){
+  const t = mode==='satellite' ? '&t=k' : '';
+  return `https://maps.google.com/maps?q=${area.lat},${area.lng}&z=16${t}&output=embed`;
+}
+
+/* ======================================================================
+   GOVERNMENT AMENITIES — used by the New Lands plot amenities popup
+====================================================================== */
+const AMENITIES = {
+  fairlands: {
+    transport:[{name:'Fairlands Bus Terminus', distance:'0.6 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Fairlands', distance:'0.9 km'}],
+    hospitals:[{name:'Govt. Primary Health Centre, Fairlands', distance:'1.2 km'}]
+  },
+  attur: {
+    transport:[{name:'Attur Main Road Bus Stand', distance:'0.4 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Attur', distance:'1.1 km'}],
+    hospitals:[{name:'Government Hospital, Attur', distance:'2.0 km'}]
+  },
+  hasthampatti: {
+    transport:[{name:'Hasthampatti Bus Terminus', distance:'0.5 km'}],
+    schools:[{name:'Govt. Model Higher Secondary School, Hasthampatti', distance:'0.8 km'}],
+    hospitals:[{name:'Government General Hospital, Salem', distance:'1.5 km'}]
+  },
+  fiveroads: {
+    transport:[{name:'Five Roads Junction Bus Stop', distance:'0.3 km'}],
+    schools:[{name:'Govt. Girls Higher Secondary School, Five Roads', distance:'1.0 km'}],
+    hospitals:[{name:'Government Taluk Hospital', distance:'1.8 km'}]
+  },
+  suramangalam: {
+    transport:[{name:'Suramangalam Bus Stop', distance:'0.4 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Suramangalam', distance:'0.7 km'}],
+    hospitals:[{name:'Govt. Primary Health Centre, Suramangalam', distance:'1.4 km'}]
+  },
+  ammapet: {
+    transport:[{name:'Ammapet Bus Terminus', distance:'0.5 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Ammapet', distance:'0.9 km'}],
+    hospitals:[{name:'Govt. Primary Health Centre, Ammapet', distance:'1.1 km'}]
+  },
+  shevapet: {
+    transport:[{name:'Shevapet Bus Stop', distance:'0.3 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Shevapet', distance:'0.8 km'}],
+    hospitals:[{name:'Government Taluk Hospital, Shevapet', distance:'1.3 km'}]
+  },
+  alagapuram: {
+    transport:[{name:'Alagapuram Bus Stop', distance:'0.5 km'}],
+    schools:[{name:'Govt. Higher Secondary School, Alagapuram', distance:'1.0 km'}],
+    hospitals:[{name:'Govt. Primary Health Centre, Alagapuram', distance:'1.6 km'}]
+  }
+};
+function showAmenities(layoutId, plotId){
+  const l = LAND_LAYOUTS.find(x=>x.id===layoutId);
+  const p = l.plots.find(x=>x.id===plotId);
+  const area = AREAS.find(a=>a.id===l.area);
+  const data = AMENITIES[l.area];
+  document.getElementById('amenities-sub').textContent = plotId + ' · ' + (area ? area.name : '');
+  const section = (label, icon, items)=> `<h4 style="margin:14px 0 6px;font-size:13px;">${icon} ${label}</h4>` +
+    items.map(it=>`<div class="amenity-row"><span>${it.name}</span><span>${it.distance}</span></div>`).join('');
+  let projectAlert = '';
+  if(p.govProject){
+    projectAlert = `<div style="background:rgba(245,181,89,.12);border:1px solid rgba(245,181,89,.4);border-radius:8px;padding:10px 12px;margin-bottom:2px;">
+      <b>${p.govProject.icon} ${p.govProject.label}</b>
+      <p style="margin:6px 0 0;font-size:12px;color:var(--ink-dim);line-height:1.5;">${p.govProject.impact}</p>
+    </div>`;
+  }
+  document.getElementById('amenities-content').innerHTML = projectAlert +
+    section('Public Transport (Metro/Bus)', '🚌', data.transport) +
+    section('Government Schools', '🏫', data.schools) +
+    section('Government Hospitals', '🏥', data.hospitals);
+  document.getElementById('modal-amenities').classList.add('show');
+}
+function closeAmenitiesModal(){ document.getElementById('modal-amenities').classList.remove('show'); }
+function showCorridorInfo(areaId){
+  const area = AREAS.find(a=>a.id===areaId);
+  document.getElementById('amenities-sub').textContent = (area?area.name:areaId) + ' · Elevated Transit Corridor';
+  document.getElementById('amenities-content').innerHTML = `
+    <div style="background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35);border-radius:8px;padding:12px 14px;">
+      <b>🚇 Elevated Metro / Transit Corridor</b>
+      <p style="margin:8px 0 0;font-size:12px;color:var(--ink-dim);line-height:1.6;">Runs on dedicated piers above the road reservation. The airspace the viaduct occupies, the pier footprints at ground level, and the road/plots underneath are three separate rights layers — a flat 2D parcel map has no field to record who holds the corridor's air-rights versus the frontage rights at ground level below it.</p>
+    </div>`;
+  document.getElementById('modal-amenities').classList.add('show');
+}
+
+/* Generates a standard floors[] array (Terrace, N..1 upper floors, Ground) for
+   new apartment entries so each one doesn't need to be hand-written. */
+function mkFloors(upperFloors, perFloor){
+  const ord = n => n===1?'1st':n===2?'2nd':n===3?'3rd':n+'th';
+  const floors = [{name:'Terrace', units:[]}];
+  for(let f=upperFloors; f>=1; f--){
+    const units=[]; for(let u=1;u<=perFloor;u++) units.push(String(f*100+u));
+    floors.push({name:ord(f)+' Floor', units});
+  }
+  const g=[]; for(let u=1;u<=perFloor;u++) g.push('G0'+u);
+  floors.push({name:'Ground Floor', units:g});
+  return floors;
+}
+const APT_PHOTOS = [
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20building-%20modern%20tower.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20buildings%20-%20modern%20and%20heritage.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20Building%20Yellow%20Wall%20(Unsplash).jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Brown%20Apartment%20Building%20(Unsplash).jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/APARTMENT%20COMPLEX%20(6819831308).jpg'
+];
+const APARTMENTS = [
+  {id:'apt-green-garden', type:'apartment', ulpin:'APT-SLM-2024-001', name:'Green Garden Apartments', area:'fairlands', addr:'Fairlands, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20building-%20modern%20tower.jpg',
+    floorsCount:5, floorHeightFt:10, footprint:{l:70,w:65}, plotArea:'12,450 sq.ft', builtUp:'48,200 sq.ft', yearBuilt:2024,
+    floors:[{name:'Terrace', units:[]},{name:'4th Floor', units:['401','402','403','404']},{name:'3rd Floor', units:['301','302','303','304']},
+      {name:'2nd Floor', units:['201','202','203','204']},{name:'1st Floor', units:['101','102','103','104']},{name:'Ground Floor', units:['G01','G02','G03','G04']}]},
+  {id:'apt-lakeview', type:'apartment', ulpin:'APT-SLM-2024-011', name:'Lakeview Residency', area:'hasthampatti', addr:'Hasthampatti, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20buildings%20-%20modern%20and%20heritage.jpg',
+    floorsCount:4, floorHeightFt:10, footprint:{l:60,w:55}, plotArea:'9,800 sq.ft', builtUp:'34,600 sq.ft', yearBuilt:2022,
+    floors:[{name:'3rd Floor', units:['301','302','303']},{name:'2nd Floor', units:['201','202','203']},{name:'1st Floor', units:['101','102','103']},{name:'Ground Floor', units:['G01','G02','G03']}]},
+  {id:'apt-sunrise-heights', type:'apartment', ulpin:'APT-SLM-2024-014', name:'Sunrise Heights', area:'fairlands', addr:'Fairlands, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Apartment%20Building%20Yellow%20Wall%20(Unsplash).jpg',
+    floorsCount:4, floorHeightFt:10, footprint:{l:58,w:50}, plotArea:'8,900 sq.ft', builtUp:'29,400 sq.ft', yearBuilt:2023,
+    floors:[{name:'3rd Floor', units:['301','302','303']},{name:'2nd Floor', units:['201','202','203']},{name:'1st Floor', units:['101','102','103']},{name:'Ground Floor', units:['G01','G02','G03']}]},
+  {id:'apt-palm-residency', type:'apartment', ulpin:'APT-SLM-2024-017', name:'Palm Residency', area:'attur', addr:'Attur Main Road, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Brown%20Apartment%20Building%20(Unsplash).jpg',
+    floorsCount:3, floorHeightFt:10, footprint:{l:52,w:48}, plotArea:'7,200 sq.ft', builtUp:'21,000 sq.ft', yearBuilt:2021,
+    floors:[{name:'2nd Floor', units:['201','202']},{name:'1st Floor', units:['101','102']},{name:'Ground Floor', units:['G01','G02']}]},
+  {id:'apt-silver-oak', type:'apartment', ulpin:'APT-SLM-2024-019', name:'Silver Oak Apartments', area:'fiveroads', addr:'Five Roads, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/APARTMENT%20COMPLEX%20(6819831308).jpg',
+    floorsCount:5, floorHeightFt:10, footprint:{l:65,w:60}, plotArea:'11,000 sq.ft', builtUp:'40,800 sq.ft', yearBuilt:2020,
+    floors:[{name:'4th Floor', units:['401','402']},{name:'3rd Floor', units:['301','302']},{name:'2nd Floor', units:['201','202']},{name:'1st Floor', units:['101','102']},{name:'Ground Floor', units:['G01','G02']}]},
+
+  // --- additional examples so every area shows 3-4 named apartment buildings ---
+  {id:'apt-meenakshi-enclave', type:'apartment', ulpin:'APT-SLM-2024-101', name:'Meenakshi Enclave', area:'fairlands', addr:'Fairlands, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[2], floorsCount:4, floorHeightFt:10, footprint:{l:56,w:48}, plotArea:'8,400 sq.ft', builtUp:'27,600 sq.ft', yearBuilt:2022, floors:mkFloors(3,3)},
+
+  {id:'apt-kaveri-nagar', type:'apartment', ulpin:'APT-SLM-2024-102', name:'Kaveri Nagar Residency', area:'attur', addr:'Attur Main Road, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[0], floorsCount:4, floorHeightFt:10, footprint:{l:60,w:50}, plotArea:'9,200 sq.ft', builtUp:'30,100 sq.ft', yearBuilt:2023, floors:mkFloors(3,3)},
+  {id:'apt-shanthi-flats', type:'apartment', ulpin:'APT-SLM-2024-103', name:'Shanthi Flats', area:'attur', addr:'Attur Main Road, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[3], floorsCount:3, floorHeightFt:10, footprint:{l:50,w:44}, plotArea:'6,800 sq.ft', builtUp:'18,900 sq.ft', yearBuilt:2019, floors:mkFloors(2,2)},
+
+  {id:'apt-ashok-nagar', type:'apartment', ulpin:'APT-SLM-2024-104', name:'Ashok Nagar Apartments', area:'hasthampatti', addr:'Hasthampatti, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[1], floorsCount:5, floorHeightFt:10, footprint:{l:64,w:56}, plotArea:'10,600 sq.ft', builtUp:'38,200 sq.ft', yearBuilt:2021, floors:mkFloors(4,3)},
+  {id:'apt-vinayaka-residency', type:'apartment', ulpin:'APT-SLM-2024-105', name:'Vinayaka Residency', area:'hasthampatti', addr:'Hasthampatti, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[4], floorsCount:3, floorHeightFt:10, footprint:{l:52,w:46}, plotArea:'7,100 sq.ft', builtUp:'19,600 sq.ft', yearBuilt:2020, floors:mkFloors(2,3)},
+
+  {id:'apt-rajaji-towers', type:'apartment', ulpin:'APT-SLM-2024-106', name:'Rajaji Towers', area:'fiveroads', addr:'Five Roads, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[0], floorsCount:5, floorHeightFt:10, footprint:{l:62,w:54}, plotArea:'10,000 sq.ft', builtUp:'36,400 sq.ft', yearBuilt:2022, floors:mkFloors(4,3)},
+  {id:'apt-nandhini-apartments', type:'apartment', ulpin:'APT-SLM-2024-107', name:'Nandhini Apartments', area:'fiveroads', addr:'Five Roads, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[2], floorsCount:3, floorHeightFt:10, footprint:{l:48,w:42}, plotArea:'6,400 sq.ft', builtUp:'17,800 sq.ft', yearBuilt:2018, floors:mkFloors(2,2)},
+
+  {id:'apt-suramangalam-sri-ranga', type:'apartment', ulpin:'APT-SLM-2024-108', name:'Sri Ranga Residency', area:'suramangalam', addr:'Suramangalam, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[1], floorsCount:4, floorHeightFt:10, footprint:{l:58,w:50}, plotArea:'8,800 sq.ft', builtUp:'28,600 sq.ft', yearBuilt:2021, floors:mkFloors(3,3)},
+  {id:'apt-suramangalam-junction-view', type:'apartment', ulpin:'APT-SLM-2024-109', name:'Junction View Apartments', area:'suramangalam', addr:'Suramangalam, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[3], floorsCount:3, floorHeightFt:10, footprint:{l:50,w:44}, plotArea:'6,900 sq.ft', builtUp:'19,100 sq.ft', yearBuilt:2019, floors:mkFloors(2,3)},
+  {id:'apt-periyar-nagar-flats', type:'apartment', ulpin:'APT-SLM-2024-110', name:'Periyar Nagar Flats', area:'suramangalam', addr:'Suramangalam, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[4], floorsCount:4, floorHeightFt:10, footprint:{l:55,w:48}, plotArea:'8,100 sq.ft', builtUp:'25,400 sq.ft', yearBuilt:2023, floors:mkFloors(3,2)},
+
+  {id:'apt-ammapet-krishna', type:'apartment', ulpin:'APT-SLM-2024-111', name:'Krishna Residency', area:'ammapet', addr:'Ammapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[0], floorsCount:3, floorHeightFt:10, footprint:{l:50,w:45}, plotArea:'6,950 sq.ft', builtUp:'18,700 sq.ft', yearBuilt:2020, floors:mkFloors(2,3)},
+  {id:'apt-ammapet-mother-teresa-nagar', type:'apartment', ulpin:'APT-SLM-2024-112', name:'Mother Teresa Nagar Apartments', area:'ammapet', addr:'Ammapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[2], floorsCount:4, floorHeightFt:10, footprint:{l:57,w:49}, plotArea:'8,300 sq.ft', builtUp:'26,900 sq.ft', yearBuilt:2022, floors:mkFloors(3,3)},
+  {id:'apt-ammapet-sipcot-road', type:'apartment', ulpin:'APT-SLM-2024-113', name:'SIPCOT Road Flats', area:'ammapet', addr:'Ammapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[4], floorsCount:3, floorHeightFt:10, footprint:{l:48,w:42}, plotArea:'6,300 sq.ft', builtUp:'16,900 sq.ft', yearBuilt:2017, floors:mkFloors(2,2)},
+
+  {id:'apt-shevapet-market-view', type:'apartment', ulpin:'APT-SLM-2024-114', name:'Market View Residency', area:'shevapet', addr:'Shevapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[1], floorsCount:4, floorHeightFt:10, footprint:{l:54,w:47}, plotArea:'7,900 sq.ft', builtUp:'24,800 sq.ft', yearBuilt:2021, floors:mkFloors(3,3)},
+  {id:'apt-shevapet-bazaar-street', type:'apartment', ulpin:'APT-SLM-2024-115', name:'Bazaar Street Apartments', area:'shevapet', addr:'Shevapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[3], floorsCount:3, floorHeightFt:10, footprint:{l:46,w:40}, plotArea:'5,900 sq.ft', builtUp:'16,200 sq.ft', yearBuilt:2016, floors:mkFloors(2,2)},
+  {id:'apt-shevapet-kottamedu', type:'apartment', ulpin:'APT-SLM-2024-116', name:'Kottamedu Flats', area:'shevapet', addr:'Shevapet, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[0], floorsCount:4, floorHeightFt:10, footprint:{l:56,w:48}, plotArea:'8,400 sq.ft', builtUp:'26,000 sq.ft', yearBuilt:2020, floors:mkFloors(3,2)},
+
+  {id:'apt-alagapuram-lakeview', type:'apartment', ulpin:'APT-SLM-2024-117', name:'Lakeview Gardens', area:'alagapuram', addr:'Alagapuram, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[2], floorsCount:4, floorHeightFt:10, footprint:{l:58,w:50}, plotArea:'8,900 sq.ft', builtUp:'28,100 sq.ft', yearBuilt:2023, floors:mkFloors(3,3)},
+  {id:'apt-alagapuram-nehru-nagar', type:'apartment', ulpin:'APT-SLM-2024-118', name:'Nehru Nagar Flats', area:'alagapuram', addr:'Alagapuram, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[4], floorsCount:3, floorHeightFt:10, footprint:{l:50,w:44}, plotArea:'6,800 sq.ft', builtUp:'18,300 sq.ft', yearBuilt:2018, floors:mkFloors(2,3)},
+  {id:'apt-alagapuram-junction-road', type:'apartment', ulpin:'APT-SLM-2024-119', name:'Junction Road Residency', area:'alagapuram', addr:'Alagapuram, Salem, Tamil Nadu', status:'Completed', usage:'Residential',
+    photo:APT_PHOTOS[1], floorsCount:3, floorHeightFt:10, footprint:{l:48,w:42}, plotArea:'6,200 sq.ft', builtUp:'16,600 sq.ft', yearBuilt:2019, floors:mkFloors(2,2)}
+];
+
+const SHOPS = [
+  {id:'shop-megamart', type:'shop', ulpin:'SHP-SLM-2024-021', name:'Mega Mart', area:'fiveroads', addr:'Five Roads, Salem, Tamil Nadu', status:'Occupied', usage:'Retail', shopArea:'2,200 sq.ft', frontage:'40 ft', occupancy:'rented',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Supermarkt%20in%20Indien%2C%20convenience%20store%20in%20India.jpg'},
+  {id:'shop-corner', type:'shop', ulpin:'SHP-SLM-2024-022', name:'Corner Stationery', area:'fiveroads', addr:'Five Roads, Salem, Tamil Nadu', status:'Vacant', usage:'Retail', shopArea:'450 sq.ft', frontage:'12 ft', occupancy:'owner-run',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/A%20shop%20in%20village%20mehta%2C%20India.png'},
+  {id:'shop-balaji-stores', type:'shop', ulpin:'SHP-SLM-2024-025', name:'Sri Balaji General Stores', area:'attur', addr:'Attur Main Road, Salem, Tamil Nadu', status:'Occupied', usage:'Retail', shopArea:'620 sq.ft', frontage:'18 ft', occupancy:'owner-run',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Street%20trade%20in%20India.jpg'},
+  {id:'shop-fresh-mart', type:'shop', ulpin:'SHP-SLM-2024-027', name:'Fresh Mart Vegetables', area:'hasthampatti', addr:'Hasthampatti, Salem, Tamil Nadu', status:'Occupied', usage:'Retail', shopArea:'380 sq.ft', frontage:'14 ft', occupancy:'rented',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Vegetables%20arranged%20at%20a%20roadside%20stall%20in%20India.jpg'},
+  {id:'shop-yesh-computers', type:'shop', ulpin:'SHP-SLM-2024-029', name:'Yesh Computers', area:'fairlands', addr:'Fairlands, Salem, Tamil Nadu', status:'Occupied', usage:'Retail — Electronics', shopArea:'540 sq.ft', frontage:'16 ft', occupancy:'owner-run',
+    photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Yesh%20computers.jpg'},
+];
+
+const COMPLEXES = [
+  {id:'cmplx-sunrise', type:'complex', ulpin:'CPX-SLM-2024-031', name:'Sunrise Complex', area:'hasthampatti', addr:'Hasthampatti, Salem, Tamil Nadu', status:'Completed', usage:'Mixed-use (Shops + Offices)',
+    floorsCount:3, floorHeightFt:11, footprint:{l:90,w:50}, plotArea:'15,000 sq.ft', builtUp:'40,500 sq.ft', yearBuilt:2021,
+    floors:[{name:'2nd Floor', units:['201','202','203','204','205']},{name:'1st Floor', units:['101','102','103','104','105']},{name:'Ground Floor', units:['G01','G02','G03','G04','G05']}]}
+];
+
+const LAND_LAYOUTS = [
+  {id:'land-premium-city', name:'Premium City Plots', area:'attur', addr:'Attur Main Road, Salem, Tamil Nadu', rows:4, cols:6, myPlotId:'PLOT-SLM-2024-045',
+    plots:(function(){
+      const arr=[]; let n=1;
+      for(let r=0;r<4;r++){for(let c=0;c<6;c++){
+        const code='PLOT-SLM-2024-'+String(n+20).padStart(3,'0');
+        let govProject = null;
+        if(c===5) govProject = {type:'metro', icon:'🚇', label:'Metro Corridor (Proposed)',
+          impact:'Salem Metro Phase II corridor has been proposed along this stretch. Land near upcoming metro stations typically sees a 20–30% rate appreciation once construction is confirmed.'};
+        else if(r===0) govProject = {type:'flyover', icon:'🚧', label:'Flyover Project (Upcoming)',
+          impact:'A flyover is planned near this row to ease Attur Main Road traffic. Improved connectivity from such projects usually raises nearby land rates by 15–20% over 2–3 years.'};
+        arr.push({id:code, row:r, col:c, status: n===13?'mine':(n%4===0?'vacant':'sold'),
+          lengthFt:40, widthFt:60, areaSqft:2400, facing:['East','West','North','South'][n%4], govProject});
+        n++;
+      }}
+      return arr;
+    })()}
+];
+LAND_LAYOUTS[0].plots.forEach(p=>{ if(p.status==='mine') p.id = LAND_LAYOUTS[0].myPlotId; });
+
+const MY_PROPERTIES = [
+  {kind:'apartment-unit', propId:'apt-green-garden', unit:'101', label:'Green Garden Apartments · Unit 101', addr:'Fairlands, Salem'},
+  {kind:'land-plot', layoutId:'land-premium-city', plotId:'PLOT-SLM-2024-045', label:'Premium City Plots · PLOT-SLM-2024-045', addr:'Attur Main Road, Salem'},
+];
+
+/* ======================================================================
+   ACCESS CONTROL — Government Officials see every record in full.
+   A logged-in Owner/Citizen can see all property/building structure
+   (floors, units, occupancy, parking layout, 3D models) but NOT the
+   personal details (name, Aadhaar, mobile, email, household members)
+   of any unit, plot, or shop that isn't their own.
+====================================================================== */
+let CURRENT_ROLE = 'official';
+const MY_UNIT_RECORD = MY_PROPERTIES.find(m=>m.kind==='apartment-unit');
+function canViewPersonal(propId, unitId){
+  return CURRENT_ROLE==='official' || (MY_UNIT_RECORD && propId===MY_UNIT_RECORD.propId && unitId===MY_UNIT_RECORD.unit);
+}
+/* An Owner/Citizen only sees the internal land/area breakdown (room-wise for
+   their house, feature-wise for a whole apartment/complex building) for their
+   OWN registered property — not for buildings or units belonging to someone
+   else. Government Officials always see every breakdown. */
+function canViewBreakdown(propId, unitId){
+  if(CURRENT_ROLE==='official') return true;
+  if(!MY_UNIT_RECORD) return false;
+  if(unitId) return propId===MY_UNIT_RECORD.propId && unitId===MY_UNIT_RECORD.unit;
+  return propId===MY_UNIT_RECORD.propId; // whole-building breakdown: only if you own a unit in it
+}
+function breakdownPrivacyNotice(){
+  return `<h4 style="margin:0 0 8px;font-size:14px;">📐 Land / Area Breakdown</h4>
+    <div class="card" style="background:rgba(246,133,133,.07);border-color:rgba(246,133,133,.35);margin:0;">
+      <p class="page-sub" style="margin:0;line-height:1.6;">🔒 This structural breakdown is private — it is only visible to this property's own registered owner or a verified government official. You can still see your own property's full holding details under "My Properties".</p>
+    </div>`;
+}
+function privacyNotice(msg){
+  return `<div class="card" style="background:rgba(246,133,133,.07);border-color:rgba(246,133,133,.35);">
+    <h4 style="margin:0 0 8px;font-size:13.5px;">🔒 Private Information</h4>
+    <p class="page-sub" style="margin:0;line-height:1.6;">${msg || 'This resident\'s personal details (name, ID, contact info) are private. Only the property\'s own owner or a verified government official can view this record.'}</p>
+  </div>`;
+}
+
+/* ======================================================================
+   PARKING — bay-wise sub-parcel ULPIN records (basement levels for
+   apartments/complexes, surface frontage bays for shops)
+====================================================================== */
+const PARKING_CACHE = {};
+function genParkingLot(prop){
+  if(PARKING_CACHE[prop.id]) return PARKING_CACHE[prop.id];
+  const allUnits = [];
+  prop.floors.forEach(f=> f.units.forEach(u=> allUnits.push({floor:f.name, unit:u})));
+  const totalUnits = allUnits.length || 1;
+  const levels = prop.floorsCount>=4 ? ['Basement 1','Basement 2'] : ['Basement 1'];
+  const bayCount = Math.max(6, Math.round(totalUnits*1.3));
+  const perLevel = Math.ceil(bayCount/levels.length);
+  const bays=[]; let n=0;
+  levels.forEach((lvl,li)=>{
+    const code = li===0?'B1':'B2';
+    for(let i=0;i<perLevel;i++){
+      const num = String(i+1).padStart(2,'0');
+      const bayId = prop.ulpin+'-P-'+code+'-'+num;
+      const h = hashStr(bayId);
+      let type='car';
+      if(h%9===0) type='visitor';
+      else if(h%7===0) type='ev';
+      else if(h%5===0) type='bike';
+      let assigned=null;
+      if((type==='car'||type==='bike') && h%4!==0){ assigned = allUnits[n % totalUnits]; }
+      bays.push({id:bayId, level:lvl, type, assigned});
+      n++;
+    }
+  });
+  PARKING_CACHE[prop.id]=bays;
+  return bays;
+}
+function genShopParking(shop){
+  if(PARKING_CACHE[shop.id]) return PARKING_CACHE[shop.id];
+  const h = hashStr(shop.id);
+  const count = 2 + (h%3);
+  const bays=[];
+  for(let i=0;i<count;i++){
+    const bayId = shop.ulpin+'-P-'+String(i+1).padStart(2,'0');
+    const type = (i===count-1 && h%2===0) ? 'visitor' : 'car';
+    bays.push({id:bayId, type, level:'Frontage / Surface Parking'});
+  }
+  PARKING_CACHE[shop.id]=bays;
+  return bays;
+}
+function parkingBayForUnit(prop, floorName, unitId){
+  return genParkingLot(prop).find(b=> b.assigned && b.assigned.floor===floorName && b.assigned.unit===unitId) || null;
+}
+let currentParkingLevel = null;
+function setParkingLevel(lvl, el){
+  currentParkingLevel = lvl;
+  document.querySelectorAll('#parking-level-chips .chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderParkingGrid();
+}
+function renderParkingTab(){
+  const bays = genParkingLot(currentProp);
+  const levels = [...new Set(bays.map(b=>b.level))];
+  document.getElementById('parking-example-id').textContent = bays[0] ? bays[0].id : '—';
+  document.getElementById('parking-level-chips').innerHTML =
+    `<div class="chip active" onclick="setParkingLevel(null,this)">All Levels</div>` +
+    levels.map(l=>`<div class="chip" onclick="setParkingLevel('${l}',this)">${l}</div>`).join('');
+  currentParkingLevel = null;
+  document.getElementById('prop-parking-detail').innerHTML = '';
+  renderParkingGrid();
+}
+const PARKING_ICON = {car:'🚗', bike:'🏍️', ev:'⚡', visitor:'🅿️'};
+function renderParkingGrid(){
+  const bays = genParkingLot(currentProp).filter(b=> !currentParkingLevel || b.level===currentParkingLevel);
+  document.getElementById('prop-parkinggrid').innerHTML = bays.map(b=>{
+    const statusClass = b.type==='visitor' ? 'visitor' : (b.type==='ev' ? 'ev' : (b.assigned ? 'allotted':'vacant'));
+    const statusText = b.assigned ? 'Unit '+b.assigned.unit : (b.type==='visitor' ? 'Visitor bay' : 'Unallotted');
+    return `<div class="parking-cell ${statusClass}" onclick="showParkingBay('${b.id}')">
+      <div class="p-ic">${PARKING_ICON[b.type]}</div>
+      <div class="p-id">${b.id}</div>
+      <div class="p-status">${b.level} · ${statusText}</div>
+    </div>`;
+  }).join('') || '<p class="page-sub">No bays on this level.</p>';
+}
+function showParkingBay(bayId){
+  const b = genParkingLot(currentProp).find(x=>x.id===bayId);
+  if(!b) return;
+  let ownerBlock;
+  if(b.assigned){
+    const mine = canViewPersonal(currentProp.id, b.assigned.unit);
+    if(!mine){
+      ownerBlock = `<div class="row"><span>Allotted to</span><span>Unit ${b.assigned.unit} (${b.assigned.floor})</span></div>
+        <div class="row"><span>Bay owner</span><span>🔒 Private</span></div>`;
+    } else {
+      const owner = genOwner(currentProp.id+'-'+b.assigned.floor+'-'+b.assigned.unit, 'OWN');
+      ownerBlock = `<div class="row"><span>Allotted to</span><span>Unit ${b.assigned.unit} (${b.assigned.floor})</span></div>
+        <div class="row"><span>Bay owner</span><span>${owner.name}</span></div>
+        <div class="row"><span>Owner ID</span><span>${owner.id}</span></div>`;
+    }
+  } else if(b.type==='visitor'){
+    ownerBlock = `<div class="row"><span>Status</span><span>Reserved for visitor / guest use — not individually owned.</span></div>`;
+  } else {
+    ownerBlock = `<div class="row"><span>Status</span><span>Unallotted — available for lease via the residents' association.</span></div>`;
+  }
+  document.getElementById('prop-parking-detail').innerHTML = `
+    <div class="card resident-card">
+      <h4>${PARKING_ICON[b.type]} Bay ${b.id}</h4>
+      <div class="row"><span>Level</span><span>${b.level}</span></div>
+      <div class="row"><span>Bay type</span><span>${b.type.toUpperCase()}</span></div>
+      <div class="row"><span>Sub-parcel ULPIN</span><span>${b.id}</span></div>
+      ${ownerBlock}
+    </div>`;
+}
+
+/* ======================================================================
+   VERTICAL OWNERSHIP LAYERS — 3D cadastre cross-section for a building
+====================================================================== */
+function verticalLayerBlocks(prop){
+  const blocks = [{key:'air', cls:'air', label:'Air Rights', sub:prop.ulpin+'-AIR', tag:'UNBUILT FSI',
+    desc:'Unbuilt vertical development potential above the terrace. In a 3D cadastre this airspace can be titled and transferred separately from the land below it.'}];
+  prop.floors.forEach(f=>{
+    const isCommon = f.units.length===0;
+    blocks.push({key:'floor-'+f.name, cls:isCommon?'common':'floor', label:f.name, sub:prop.ulpin+'-'+f.name.replace(/\s+/g,'').toUpperCase(), tag:isCommon?'COMMON AREA':f.units.length+' UNITS',
+      desc:isCommon ? 'Shared terrace / common area — jointly owned by all unit holders, not individually titled.' : f.units.length+' individually titled units on this floor ('+f.units.join(', ')+'), each carrying its own sub-parcel ULPIN.'});
+  });
+  blocks.push({key:'basement', cls:'basement', label:'Basement Parking', sub:prop.ulpin+'-P-B1/B2', tag:genParkingLot(prop).length+' BAYS',
+    desc:'Bay-wise titled parking beneath the building — see the Parking tab. Each bay is linked to the specific unit that owns it.'});
+  blocks.push({key:'utility', cls:'utility', label:'Subsurface Utilities', sub:prop.ulpin+'-UTIL', tag:'EASEMENT',
+    desc:'Water, sewage, stormwater and fibre corridors running beneath the plot — a protected easement layer, mapped but not individually owned.'});
+  return blocks;
+}
+function renderVerticalLayers(prop){
+  const blocks = verticalLayerBlocks(prop);
+  document.getElementById('prop-vlayers').innerHTML = blocks.map((b,i)=>`
+    <div class="vlayer-row ${b.cls}" id="vlrow-${i}" onclick="showVLayer(${i})">
+      <div><div class="vl-name">${b.label}</div><div class="vl-sub">${b.sub}</div></div>
+      <span class="vl-tag">${b.tag}</span>
+    </div>`).join('');
+  window._currentVLayers = blocks;
+  document.getElementById('prop-vlayer-detail').innerHTML = '<p class="page-sub" style="margin:0;">Click a layer on the left to see its sub-parcel ULPIN and what it represents.</p>';
+}
+function showVLayer(i){
+  const b = window._currentVLayers[i];
+  document.querySelectorAll('#prop-vlayers .vlayer-row').forEach(r=>r.classList.remove('active'));
+  document.getElementById('vlrow-'+i).classList.add('active');
+  document.getElementById('prop-vlayer-detail').innerHTML = `
+    <h4 style="margin:0 0 6px;font-size:13.5px;">${b.label}</h4>
+    <div class="row"><span>Sub-parcel ULPIN</span><span>${b.sub}</span></div>
+    <p class="page-sub" style="margin:10px 0 0;line-height:1.6;">${b.desc}</p>`;
+}
+
+/* ======================================================================
+   EXPLODED / FLOOR-BY-FLOOR ISOMETRIC BREAKDOWN
+   Reached via a "Floor-by-Floor Breakdown →" arrow on any apartment,
+   complex, shop or individual house page. Renders every level as a
+   separated isometric slab, subdivided into its individually titled
+   units — the visual companion to the Vertical Ownership Layers card.
+====================================================================== */
+let explodedBackAction = null;
+function shopToPseudoProp(shop){
+  return {id:shop.id, name:shop.name, ulpin:shop.ulpin, type:'shop', _isShopPseudo:true, _shopStatus:shop.status,
+    floors:[{name:'Ground Floor', units:['SHOP']}]};
+}
+function explodedPrivacyBlock(){
+  return `<div class="card" style="background:rgba(246,133,133,.07);border-color:rgba(246,133,133,.35);max-width:640px;margin:0 auto;">
+    <h4 style="margin:0 0 8px;font-size:14px;">🔒 Private Breakdown</h4>
+    <p class="page-sub" style="margin:0;line-height:1.6;">This structural breakdown belongs to a property that isn't registered under your account, so it's private. Only that property's own owner or a verified government official can open this view.</p>
+  </div>`;
+}
+function openExplodedView(kind){
+  if(kind==='house'){
+    const house = currentHouse;
+    explodedBackAction = ()=>openHouseDetail(house.floorName, house.unitId);
+    document.getElementById('exploded-title').textContent = 'House ' + house.unitId + ' — Room-wise Land Breakdown';
+    if(!canViewBreakdown(house.prop.id, house.unitId)){
+      document.getElementById('exploded-sub').textContent = '';
+      document.getElementById('exploded-svg-wrap').innerHTML = explodedPrivacyBlock();
+      showPage('explodedview');
+      return;
+    }
+    document.getElementById('exploded-sub').textContent = "This is the internal room-by-room carpet-area layout of this single house only — not the parent apartment building. Each block is sized to that room's own area (exact figures are in the Land / Area Breakdown card too).";
+    document.getElementById('exploded-svg-wrap').innerHTML = houseRoomPlanSVG(house);
+    showPage('explodedview');
+    return;
+  }
+  let prop, highlight=null, backFn;
+  if(kind==='prop'){
+    prop = currentProp;
+    backFn = ()=>openProp(prop.id);
+  } else if(kind==='shop'){
+    prop = shopToPseudoProp(currentShop);
+    backFn = ()=>openShop(currentShop.id);
+  } else return;
+  explodedBackAction = backFn;
+  document.getElementById('exploded-title').textContent = prop.name + ' — Floor-by-Floor Breakdown';
+  if(!canViewBreakdown(kind==='shop' ? currentShop.id : prop.id)){
+    document.getElementById('exploded-sub').textContent = '';
+    document.getElementById('exploded-svg-wrap').innerHTML = explodedPrivacyBlock();
+    showPage('explodedview');
+    return;
+  }
+  document.getElementById('exploded-sub').textContent = 'Exploded isometric view — every level, and every unit on it, carries its own addressable sub-parcel ULPIN. This is what a flat 2D parcel map can\'t show.';
+  document.getElementById('exploded-svg-wrap').innerHTML = explodedBuildingSVG(prop, highlight);
+  showPage('explodedview');
+}
+function showExplodedUnitInfo(subUlpin, label, extra){
+  document.getElementById('amenities-sub').textContent = label;
+  document.getElementById('amenities-content').innerHTML = `
+    <div class="row"><span>Sub-parcel ULPIN</span><span>${subUlpin}</span></div>
+    <p class="page-sub" style="margin:10px 0 0;line-height:1.6;">${extra || 'This level/unit is individually titled and addressable in the 3D cadastre — distinct from the surface-level parcel and from every other floor above or below it.'}</p>`;
+  document.getElementById('modal-amenities').classList.add('show');
+}
+function explodedBuildingSVG(prop, highlight){
+  const bottomUp = [...prop.floors].reverse(); // Ground first, ascending
+  const ang = Math.PI/6, cosA = Math.cos(ang), sinA = Math.sin(ang), scale = 9;
+  const W = 11, D = 7, thickness = 13, gap = 50;
+  const n = bottomUp.length;
+  const originX = 380;
+  const originY = n*gap + 200;
+  const svgW = 800, svgH = originY + 130;
+
+  function isoPt(gx, gy, elev){ return [originX+(gx-gy)*cosA*scale, originY+(gx+gy)*sinA*scale-elev]; }
+  function down(pt, dy){ return [pt[0], pt[1]+dy]; }
+  function pathOf(pts){ return 'M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+'Z'; }
+  function esc(s){ return String(s).replace(/'/g,"\\'"); }
+
+  let svg = '';
+
+  /* Basement parking plate, below Ground */
+  const belowElev = -gap*0.82;
+  { const p0=isoPt(0,0,belowElev), pR=isoPt(W,0,belowElev), pF=isoPt(W,D,belowElev), pL=isoPt(0,D,belowElev);
+    svg += `<path d="${pathOf([p0,pR,pF,pL])}" fill="#dbeafe" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 3" opacity="0.9"
+      onclick="showExplodedUnitInfo('${prop.ulpin}-P-B1','Basement Parking','Bay-wise titled parking beneath the building — open the Parking tab to see every individual bay ULPIN.')" style="cursor:pointer;"/>`;
+    svg += `<text x="${pF[0]}" y="${pF[1]+18}" font-size="10" fill="#7dd3fc" text-anchor="middle" font-weight="700" pointer-events="none">🅿️ BASEMENT PARKING</text>`; }
+
+  bottomUp.forEach((f,i)=>{
+    const elev = i*gap;
+    const p0=isoPt(0,0,elev), pR=isoPt(W,0,elev), pF=isoPt(W,D,elev), pL=isoPt(0,D,elev);
+    const isCommon = f.units.length===0;
+    const isGround = i===0;
+    const rightFace=[pR,pF,down(pF,thickness),down(pR,thickness)];
+    const leftFace=[pL,pF,down(pF,thickness),down(pL,thickness)];
+    svg += `<path d="${pathOf(leftFace)}" fill="#c3cce3"/>`;
+    svg += `<path d="${pathOf(rightFace)}" fill="#aab4d9"/>`;
+
+    const nUnits = isCommon ? 1 : f.units.length;
+    for(let k=0;k<nUnits;k++){
+      const gxs=k*(W/nUnits), gxe=(k+1)*(W/nUnits);
+      const a=isoPt(gxs,0,elev), b=isoPt(gxe,0,elev), c=isoPt(gxe,D,elev), d=isoPt(gxs,D,elev);
+      let fill, unitLabel=null, isHi=false, clickInfo='';
+      if(isCommon){
+        fill = isGround ? '#f5b559' : '#5eead4';
+        const subUlpin = prop.ulpin+'-'+f.name.replace(/\s+/g,'').toUpperCase();
+        clickInfo = `onclick="showExplodedUnitInfo('${subUlpin}','${esc(f.name)}','Shared common area — jointly owned by all unit holders, not individually titled.')" style="cursor:pointer;"`;
+      } else {
+        const unitId = f.units[k];
+        unitLabel = unitId;
+        let occupied;
+        if(prop._isShopPseudo) occupied = prop._shopStatus==='Occupied';
+        else { const seed=(prop.id==='apt-green-garden'&&unitId==='101')?'green-101':unitSeed(prop,f.name,unitId); occupied = seed==='green-101' ? true : unitOccupied(seed); }
+        fill = occupied ? '#c9b48a' : '#8a94ab';
+        if(isGround && nUnits>1 && k===0) fill = '#f5b559';
+        if(highlight && highlight.floorName===f.name && highlight.unitId===unitId) isHi = true;
+        const subUlpin = prop.ulpin+'-'+f.name.replace(/\s+/g,'').toUpperCase()+'-'+unitId;
+        clickInfo = `onclick="showExplodedUnitInfo('${subUlpin}','Unit ${esc(unitId)} — ${esc(f.name)}')" style="cursor:pointer;"`;
+      }
+      svg += `<path d="${pathOf([a,b,c,d])}" fill="${fill}" stroke="${isHi?'#8f97f5':'#94a3b8'}" stroke-width="${isHi?2.6:1}" ${clickInfo}/>`;
+      if(unitLabel && nUnits<=8){
+        const cx=(a[0]+b[0]+c[0]+d[0])/4, cy=(a[1]+b[1]+c[1]+d[1])/4;
+        svg += `<text x="${cx}" y="${cy+3}" font-size="8.5" fill="#33405e" text-anchor="middle" font-weight="700" pointer-events="none">${unitLabel}</text>`;
+      }
+    }
+    const midA=isoPt(0,D/2,elev), midB=isoPt(W,D/2,elev);
+    svg += `<line x1="${midA[0]}" y1="${midA[1]}" x2="${midB[0]}" y2="${midB[1]}" stroke="#3a4666" stroke-width="2" opacity="0.55" pointer-events="none"/>`;
+
+    const labelX = svgW-30, labelY = pR[1];
+    svg += `<line x1="${pR[0]}" y1="${pR[1]}" x2="${labelX-4}" y2="${labelY}" stroke="#a7aec0" stroke-width="1" stroke-dasharray="2 2" pointer-events="none"/>`;
+    svg += `<text x="${labelX}" y="${labelY+3}" font-size="10.5" fill="#33405e" text-anchor="end" font-weight="700" pointer-events="none">${f.name.toUpperCase()}</text>`;
+  });
+
+  const topElev = n*gap + 30;
+  { const p0=isoPt(0,0,topElev), pR=isoPt(W,0,topElev), pF=isoPt(W,D,topElev), pL=isoPt(0,D,topElev);
+    svg += `<path d="${pathOf([p0,pR,pF,pL])}" fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.9"
+      onclick="showExplodedUnitInfo('${prop.ulpin}-AIR','Air Rights','Unbuilt vertical development potential above the roof — a separately transferable rights layer in a 3D cadastre.')" style="cursor:pointer;"/>`;
+    svg += `<text x="${pF[0]}" y="${pF[1]-8}" font-size="10" fill="#c4b5fd" text-anchor="middle" font-weight="700" pointer-events="none">✈️ AIR RIGHTS</text>`; }
+
+  return `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" style="min-width:680px;display:block;">${svg}</svg>`;
+}
+
+/* ======================================================================
+   LAND / AREA BREAKDOWN
+   Two distinct models, on purpose:
+   - Individual House (a residential unit/flat): a ROOM-WISE breakdown of
+     its own carpet area (hall, kitchen, bedrooms, baths, balcony) plus
+     its Undivided Share of Land (UDS). This is physical-layout data,
+     not personal data, so it's safe to show to any visitor — unlike the
+     household/owner records on the same page, which stay access-gated.
+   - Apartment / Complex (a whole building): a FEATURE-WISE breakdown of
+     the plot and built-up area — how much is residential/shop/office
+     space vs. common areas, parking and open ground. This is aggregate,
+     building-level data, so it never exposes any single unit's or
+     tenant's numbers.
+====================================================================== */
+function parseSqft(s){ return parseInt(String(s).replace(/[^0-9]/g,''),10) || 0; }
+const LAND_PALETTE = ['#8f97f5','#6fd99a','#f5b559','#38bdf8','#a78bfa','#f472b6','#94a3b8','#2dd4bf'];
+function landBar(segments){
+  const total = segments.reduce((s,x)=>s+x.sqft,0) || 1;
+  const bar = segments.map(seg=>`<span style="width:${(seg.sqft/total*100).toFixed(2)}%;background:${seg.color}" title="${seg.label} — ${seg.sqft.toLocaleString()} sq.ft"></span>`).join('');
+  const legend = segments.map(seg=>`
+    <div class="lb-row">
+      <span class="lb-name"><i class="lb-dot" style="background:${seg.color}"></i>${seg.icon?seg.icon+' ':''}${seg.label}</span>
+      <span><span class="lb-val">${seg.sqft.toLocaleString()} sq.ft</span><span class="lb-pct">${(seg.sqft/total*100).toFixed(0)}%</span></span>
+    </div>`).join('');
+  return `<div class="landbar">${bar}</div><div class="landbar-legend">${legend}</div>`;
+}
+
+/* ---- Room-wise breakdown for one residential unit (Individual House) ---- */
+function unitRoomBreakdown(prop, floorName, unitId, seed){
+  const h = hashStr(seed);
+  const totalUnits = prop.floors.reduce((s,f)=>s+f.units.length,0) || 1;
+  const builtUpTotal = parseSqft(prop.builtUp);
+  const plotTotal = parseSqft(prop.plotArea);
+  const residentialShare = 0.80; // rest of built-up is common areas/services, see building breakdown
+  const avgUnit = (builtUpTotal*residentialShare)/totalUnits;
+  const variance = 0.8 + (h%41)/100; // ±20% spread so units don't look identical
+  const superBuiltup = Math.round(avgUnit*variance/10)*10;
+  const bhk = superBuiltup<800 ? 1 : (superBuiltup<1200 ? 2 : 3);
+  const carpetFactor = 0.72; // typical carpet:super-builtup ratio
+  const carpet = Math.round(superBuiltup*carpetFactor);
+  const uds = Math.round(plotTotal*(superBuiltup/builtUpTotal||0)*100)/100;
+
+  let pct;
+  if(bhk===1) pct = [['Hall / Living',0.26,'🛋️'],['Kitchen',0.14,'🍳'],['Bedroom',0.28,'🛏️'],['Bathroom',0.10,'🚿'],['Balcony',0.10,'🌿'],['Passage / Utility',0.12,'📦']];
+  else if(bhk===2) pct = [['Hall / Living',0.22,'🛋️'],['Kitchen',0.11,'🍳'],['Master Bedroom',0.19,'🛏️'],['Bedroom 2',0.15,'🛏️'],['Bathrooms (2)',0.12,'🚿'],['Balcony',0.09,'🌿'],['Passage / Utility',0.12,'📦']];
+  else pct = [['Hall / Living',0.20,'🛋️'],['Kitchen',0.10,'🍳'],['Master Bedroom',0.17,'🛏️'],['Bedroom 2',0.13,'🛏️'],['Bedroom 3',0.12,'🛏️'],['Bathrooms (3)',0.12,'🚿'],['Balcony',0.08,'🌿'],['Passage / Utility',0.08,'📦']];
+
+  const segments = pct.map(([label,frac,icon],i)=>({label, sqft:Math.round(carpet*frac), color:LAND_PALETTE[i%LAND_PALETTE.length], icon}));
+  return {bhk, superBuiltup, carpet, uds, segments};
+}
+function renderHouseLandBreakdown(prop, floorName, unitId, seed){
+  const el = document.getElementById('house-landbreakdown');
+  if(!el) return;
+  const r = unitRoomBreakdown(prop, floorName, unitId, seed);
+  el.innerHTML = `
+    <h4 style="margin:0 0 4px;font-size:14px;">📐 Land / Area Breakdown — This House</h4>
+    <p class="page-sub" style="margin:0 0 4px;max-width:640px;">Room-wise carpet area for this specific unit. This is physical floor-plan data, not personal information, so — unlike the household details above — it's visible on every unit's record, occupied or not.</p>
+    <div class="grid cols-3" style="margin:12px 0 14px;">
+      <div class="card stat"><div class="label">Configuration</div><div class="val">${r.bhk} BHK</div></div>
+      <div class="card stat"><div class="label">Super Built-up</div><div class="val">${r.superBuiltup.toLocaleString()} ft²</div></div>
+      <div class="card stat"><div class="label">Undivided Share of Land (UDS)</div><div class="val">${r.uds.toLocaleString()} ft²</div></div>
+    </div>
+    <p class="page-sub" style="margin:0 0 2px;font-size:12px;">Carpet area (${r.carpet.toLocaleString()} ft²) split by room:</p>
+    ${landBar(r.segments)}
+    <div style="margin-top:6px;">
+      <button class="btn ghost sm" onclick="openExplodedView('house')">🧭 View this house's room layout →</button>
+    </div>`;
+}
+
+/* ---- Room-plan floor-plan-style SVG for one house, built from its own room segments (NOT the parent building) ---- */
+function houseRoomPlanSVG(house){
+  const r = unitRoomBreakdown(house.prop, house.floorName, house.unitId, house.seed);
+  const segs = r.segments;
+  const W = 700, H = 420;
+  const total = segs.reduce((s,x)=>s+x.sqft,0) || 1;
+  // simple two-column treemap: greedily balance rooms across two columns by area
+  const sorted = [...segs].sort((a,b)=>b.sqft-a.sqft);
+  const colA=[], colB=[]; let totA=0, totB=0;
+  sorted.forEach(seg=>{ if(totA<=totB){ colA.push(seg); totA+=seg.sqft; } else { colB.push(seg); totB+=seg.sqft; } });
+  const widthA = Math.round(W*(totA/total));
+  const widthB = W - widthA;
+  let svg = `<rect x="1" y="1" width="${W-2}" height="${H-2}" fill="none" stroke="#a7aec0" stroke-width="3" rx="4"/>`;
+  function column(items, x0, colW, colTotal){
+    let y = 0;
+    items.forEach(seg=>{
+      const h = Math.max(2, Math.round(H*(seg.sqft/colTotal)));
+      const showText = colW>70 && h>26;
+      svg += `<rect x="${x0+2}" y="${y+2}" width="${colW-4}" height="${h-4}" fill="${seg.color}" fill-opacity="0.85" stroke="#94a3b8" stroke-width="1.4" rx="3"/>`;
+      if(showText){
+        svg += `<text x="${x0+colW/2}" y="${y+h/2-6}" font-size="12.5" font-weight="700" fill="#33405e" text-anchor="middle">${seg.icon} ${seg.label}</text>`;
+        svg += `<text x="${x0+colW/2}" y="${y+h/2+12}" font-size="11" fill="#33405e" text-anchor="middle">${seg.sqft.toLocaleString()} ft²</text>`;
+      } else {
+        svg += `<text x="${x0+colW/2}" y="${y+h/2+4}" font-size="9.5" font-weight="700" fill="#33405e" text-anchor="middle">${seg.icon}</text>`;
+      }
+      y += h;
+    });
+  }
+  column(colA, 0, widthA, totA);
+  column(colB, widthA, widthB, totB);
+  svg += `<text x="${W/2}" y="${H+22}" font-size="12" fill="#9aa7c2" text-anchor="middle">Total carpet area: ${r.carpet.toLocaleString()} ft² · ${r.bhk} BHK · Super built-up ${r.superBuiltup.toLocaleString()} ft²</text>`;
+  return `<svg viewBox="0 0 ${W} ${H+34}" width="100%" style="min-width:520px;display:block;">${svg}</svg>`;
+}
+
+
+/* ---- Feature-wise breakdown for a whole apartment / complex building ---- */
+function buildingLandBreakdown(prop){
+  const plotTotal = parseSqft(prop.plotArea);
+  const builtUpTotal = parseSqft(prop.builtUp);
+  const footprint = prop.footprint ? prop.footprint.l*prop.footprint.w : Math.round(plotTotal*0.55);
+  const openArea = Math.max(plotTotal - footprint, 0);
+  const parkingBays = genParkingLot(prop).length;
+  const parkingArea = parkingBays*130; // approx sq.ft per bay, included within built-up (basement)
+
+  let usePct;
+  if(prop.type==='complex'){
+    usePct = [['Retail Shops',0.34,'🛍️'],['Office Space',0.28,'🏢'],['Common Areas / Lobby',0.13,'🚪'],['Basement Parking',0,'🅿️'],['Amenities / Services',0.10,'⚙️'],['Terrace & Utility',0.15,'🏗️']];
+  } else {
+    usePct = [['Residential Units',0.72,'🏠'],['Common Areas / Lobby',0.10,'🚪'],['Basement Parking',0,'🅿️'],['Amenities / Services',0.06,'⚙️'],['Terrace & Utility',0.12,'🏗️']];
+  }
+  const plainPct = usePct.filter(u=>u[0]!=='Basement Parking');
+  const plainTotalFrac = plainPct.reduce((s,u)=>s+u[1],0);
+  const plainArea = Math.max(builtUpTotal-parkingArea,0);
+  const builtSegments = usePct.map(([label,frac,icon],i)=>{
+    const sqft = label==='Basement Parking' ? parkingArea : Math.round(plainArea*(frac/plainTotalFrac));
+    return {label, sqft, color:LAND_PALETTE[i%LAND_PALETTE.length], icon};
+  });
+  const plotSegments = [
+    {label:'Building Footprint', sqft:footprint, color:LAND_PALETTE[0], icon:'🏗️'},
+    {label:'Open Ground / Setback / Green', sqft:openArea, color:LAND_PALETTE[1], icon:'🌳'}
+  ];
+  return {plotSegments, builtSegments, parkingBays};
+}
+function renderPropLandBreakdown(prop){
+  const el = document.getElementById('prop-landbreakdown');
+  if(!el) return;
+  const b = buildingLandBreakdown(prop);
+  const isComplex = prop.type==='complex';
+  el.innerHTML = `
+    <h4 style="margin:0 0 4px;font-size:14px;">📐 Land Breakdown — ${isComplex?'Complex Features':'Whole Building'}</h4>
+    <p class="page-sub" style="margin:0 0 12px;max-width:640px;">${isComplex
+      ? 'Aggregate space use across the whole complex — shops, offices, common areas and parking — not a per-unit or per-tenant figure, so no single business\'s leased area is exposed here.'
+      : 'Aggregate space use across the whole building — how the plot and built-up area split between residential units, shared areas and parking. For the exact carpet-area layout of a single flat, open that unit\'s "Individual House" record.'}</p>
+    <p class="page-sub" style="margin:0 0 2px;font-size:12px;">Plot area (${prop.plotArea}) — land use:</p>
+    ${landBar(b.plotSegments)}
+    <p class="page-sub" style="margin:14px 0 2px;font-size:12px;">Built-up area (${prop.builtUp}) — ${isComplex?'by complex feature':'by use'}:</p>
+    ${landBar(b.builtSegments)}`;
+}
+
+/* ======================================================================
+   ROUTER
+====================================================================== */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.page[data-page="${id}"]`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navMatch = document.querySelector(`.nav-item[data-nav="${id}"]`);
+  if(navMatch) navMatch.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ======================================================================
+   LIST CARDS
+====================================================================== */
+function propCard(p, onClick){
+  const thumbInner = p.photo ? `<img src="${p.photo}" alt="${p.name}" loading="lazy" onerror="this.outerHTML=isoBuilding('${p.type}')">` : isoBuilding(p.type);
+  return `<div class="card prop-card" onclick="${onClick}">
+    <div class="thumb">${thumbInner}<span class="badge ${p.status==='Vacant'?'vacant':''}">${p.status}</span></div>
+    <div class="body"><h4>${p.name}</h4><p>${p.addr}</p><div class="meta"><span>${p.ulpin}</span><span>${p.usage}</span></div></div>
+  </div>`;
+}
+function renderLists(){
+  document.getElementById('apartments-list').innerHTML = APARTMENTS.map(p=>propCard(p, `openProp('${p.id}')`)).join('');
+  document.getElementById('shops-list').innerHTML = SHOPS.map(p=>propCard(p, `openShop('${p.id}')`)).join('');
+  document.getElementById('complexes-list').innerHTML = COMPLEXES.map(p=>propCard(p, `openProp('${p.id}')`)).join('');
+  document.getElementById('lands-list').innerHTML = LAND_LAYOUTS.map(l=>`
+    <div class="card prop-card" onclick="openLandLayout('${l.id}')">
+      <div class="thumb">${isoBuilding('land')}<span class="badge">${l.plots.length} plots</span></div>
+      <div class="body"><h4>${l.name}</h4><p>${l.addr}</p><div class="meta"><span>${l.rows*l.cols} total plots</span></div></div>
+    </div>`).join('');
+
+  const myHtml = MY_PROPERTIES.map(mp=>{
+    if(mp.kind==='apartment-unit'){
+      const prop = APARTMENTS.find(a=>a.id===mp.propId);
+      const thumbInner = prop.photo ? `<img src="${prop.photo}" alt="${prop.name}" loading="lazy" onerror="this.outerHTML=isoBuilding('apartment')">` : isoBuilding('apartment');
+      return `<div class="card prop-card" onclick="openProp('${prop.id}')">
+        <div class="thumb">${thumbInner}<span class="badge">Unit ${mp.unit}</span></div>
+        <div class="body"><h4>${prop.name}</h4><p>${mp.addr}</p></div></div>`;
+    } else {
+      return `<div class="card prop-card" onclick="openLandLayout('${mp.layoutId}')">
+        <div class="thumb">${isoBuilding('land')}<span class="badge">${mp.plotId}</span></div>
+        <div class="body"><h4>Premium City Plots</h4><p>${mp.addr}</p></div></div>`;
+    }
+  }).join('');
+  document.getElementById('dash-myprops').innerHTML = myHtml;
+  document.getElementById('myprops-list').innerHTML = myHtml;
+  renderSampleHouseholds();
+  renderHousesList();
+}
+
+/* Quick-access demo cards for 2 / 3 / 4 / 6 person households */
+const SAMPLE_HOUSEHOLD_LINKS = [
+  {propId:'apt-lakeview', floorName:'1st Floor', unitId:'101', size:2, tag:'Couple'},
+  {propId:'apt-sunrise-heights', floorName:'2nd Floor', unitId:'201', size:3, tag:'Nuclear family'},
+  {propId:'apt-silver-oak', floorName:'1st Floor', unitId:'101', size:4, tag:'Family of four'},
+  {propId:'apt-palm-residency', floorName:'1st Floor', unitId:'101', size:6, tag:'Joint family'}
+];
+function renderSampleHouseholds(){
+  const el = document.getElementById('dash-sample-households');
+  if(!el) return;
+  el.innerHTML = SAMPLE_HOUSEHOLD_LINKS.map(s=>{
+    const prop = APARTMENTS.find(a=>a.id===s.propId);
+    return `<div class="card prop-card" onclick="openHouseDetailDirect('${s.propId}','${s.floorName}','${s.unitId}')">
+      <div class="thumb">${isoBuilding('apartment',140,100)}<span class="badge">${s.size} residents</span></div>
+      <div class="body"><h4>${s.tag}</h4><p>${prop.name} · Unit ${s.unitId}</p></div>
+    </div>`;
+  }).join('');
+}
+function openHouseDetailDirect(propId, floorName, unitId){
+  openProp(propId);
+  openHouseDetail(floorName, unitId);
+}
+
+/* ======================================================================
+   INDIVIDUAL HOUSES — dedicated top-level page listing every house/unit
+   across every apartment, each opening straight into its own house page
+====================================================================== */
+let housesFilter='all';
+function setHousesFilter(f, el){
+  housesFilter = f;
+  document.querySelectorAll('#houses-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderHousesList();
+}
+function allHouseRecords(){
+  const rows=[];
+  APARTMENTS.forEach(prop=>{
+    prop.floors.forEach(f=>{
+      f.units.forEach(u=>{
+        const seed = (prop.id==='apt-green-garden' && u==='101') ? 'green-101' : unitSeed(prop, f.name, u);
+        const occupied = unitOccupied(seed);
+        const d = unitFullDetail(seed, occupied, false);
+        rows.push({prop, floorName:f.name, unitId:u, occupied, d});
+      });
+    });
+  });
+  return rows;
+}
+function renderHousesList(){
+  const el = document.getElementById('houses-list');
+  if(!el) return;
+  let rows = allHouseRecords();
+  if(housesFilter==='occupied') rows = rows.filter(r=>r.occupied);
+  if(housesFilter==='vacant') rows = rows.filter(r=>!r.occupied);
+  el.innerHTML = rows.map(r=>{
+    const residents = r.occupied && r.d.household ? r.d.household.totalMembers : 0;
+    const badge = r.occupied ? `${residents} residents` : 'Vacant';
+    const mine = canViewPersonal(r.prop.id, r.unitId);
+    const occupantName = r.occupied ? (r.d.household ? r.d.household.members[0].name : r.d.owner.name) : '—';
+    const isPrivate = r.occupied && !mine;
+    const metaLine = !r.occupied ? 'No household on record' : (mine ? occupantName : '🔒 Resident details private');
+    return `<div class="card prop-card" onclick="openHouseDetailDirect('${r.prop.id}','${r.floorName}','${r.unitId}')">
+      <div class="thumb">${isoBuilding('apartment',140,100)}<span class="badge ${r.occupied?'':'vacant'}">${badge}</span></div>
+      <div class="body"><h4>House ${r.unitId}</h4><p>${r.prop.name} · ${r.floorName} · ${r.prop.addr}</p>
+        <div class="meta"><span${isPrivate ? ' style="color:#f68585;"' : ''}>${metaLine}</span></div></div>
+    </div>`;
+  }).join('') || '<p class="page-sub">No houses match this filter.</p>';
+}
+
+/* ======================================================================
+   AERIAL AREA VIEW — satellite-style neighborhood scene with
+   rooftops, roads, greenery, plot outlines and building pins
+====================================================================== */
+const TYPE_COLOR = {land:'#f5b559', apartment:'#8f97f5', shop:'#6fd99a', complex:'#a78bfa'};
+
+function markerCells(w,h,roadY,roadX){
+  const cols=4, rows=3, cells=[];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      let x=(c+0.6)*(w/cols), y=(r+0.55)*(h/rows);
+      if(Math.abs(y-roadY)<26) y += 40;
+      if(Math.abs(x-roadX)<26) x += 46;
+      cells.push({x:Math.min(x,w-90), y:Math.min(y,h-70)});
+    }
+  }
+  return cells;
+}
+function buildMarkers(areaId, w=900, h=380){
+  const roadY=h*0.58, roadX=w*0.62;
+  const cells = markerCells(w,h,roadY,roadX);
+  let idx=0;
+  const markers=[];
+  const push=(type,label,fn,sub)=>{ const cell=cells[idx%cells.length]; idx++; markers.push({x:cell.x,y:cell.y,type,label,fn,sub}); };
+  APARTMENTS.filter(p=>p.area===areaId).forEach(p=>push('apartment',p.name,`openProp('${p.id}')`,'G+'+(p.floorsCount-1)+' Floors · '+p.usage));
+  COMPLEXES.filter(p=>p.area===areaId).forEach(p=>push('complex',p.name,`openProp('${p.id}')`,'G+'+(p.floorsCount-1)+' Floors · '+p.usage));
+  SHOPS.filter(p=>p.area===areaId).forEach(p=>push('shop',p.name,`openShop('${p.id}')`,p.usage+' · '+p.status));
+  LAND_LAYOUTS.filter(p=>p.area===areaId).forEach(p=>push('land',p.name,`openLandLayout('${p.id}')`,p.plots.length+' plots'));
+  return markers;
+}
+function rooftopFill(seed){
+  const palette=['#ffe3c2','#c9ecd6','#ffe9b8','#dcd5f7','#c7ecf3','#ffd6de','#ddeec7','#e6dcc7'];
+  return palette[hashStr(seed)%palette.length];
+}
+function aerialSceneSVG(areaId, w, h, filterType, opts){
+  opts = opts || {};
+  const allMarkers = buildMarkers(areaId, w, h);
+  const markers = filterType ? allMarkers.filter(m=>m.type===filterType) : allMarkers;
+  const roadY = h*0.58, roadX = w*0.62;
+
+  /* rooftop texture (block-by-block, gaps left for streets/plots) */
+  let rooftops='';
+  const cellW=44, cellH=32;
+  for(let y=-cellH, ry=0; y<h; y+=cellH, ry++){
+    const rowOffset = (ry%2)*(cellW/2);
+    for(let x=-cellW, cx=0; x<w; x+=cellW, cx++){
+      const seed = areaId+':'+ry+':'+cx;
+      const hv = hashStr(seed);
+      if(hv%6===0) continue;
+      if(Math.abs((y+cellH/2)-roadY)<20 || Math.abs((x+rowOffset+cellW/2)-roadX)<20) continue;
+      const bw = cellW-7-(hv%9), bh = cellH-7-(hv%7);
+      rooftops += `<rect x="${x+rowOffset+3}" y="${y+3}" width="${bw}" height="${bh}" rx="2.5" fill="${rooftopFill(seed)}" stroke="#9aa5c0" stroke-width="1"/>`;
+    }
+  }
+
+  /* greenery scattered between rooftops */
+  let green='';
+  for(let i=0;i<Math.round(w*h/9000);i++){
+    const seed='green:'+areaId+':'+i;
+    const hv=hashStr(seed);
+    const gx=hv%w, gy=(hv>>5)%h;
+    green += `<circle cx="${gx}" cy="${gy}" r="${2.5+hv%4}" fill="#1f6b46" opacity="0.5"/>`;
+  }
+
+  /* road network */
+  const roads = `
+    <rect x="0" y="${roadY-14}" width="${w}" height="28" fill="#ccd4e8"/>
+    <line x1="0" y1="${roadY}" x2="${w}" y2="${roadY}" stroke="#8b93b0" stroke-width="2" stroke-dasharray="12 9"/>
+    <rect x="${roadX-13}" y="0" width="26" height="${h}" fill="#ccd4e8"/>
+    <line x1="${roadX}" y1="0" x2="${roadX}" y2="${h}" stroke="#8b93b0" stroke-width="2" stroke-dasharray="12 9"/>`;
+
+  /* elevated transit corridor — runs on piers above the horizontal road reservation */
+  const corridorY = roadY - 34;
+  let corridorPillars = '';
+  for(let x=w*0.08; x<w*0.95; x+=92){
+    corridorPillars += `<rect x="${x-2}" y="${corridorY}" width="4" height="${roadY-corridorY-14}" fill="#b8c2d6" opacity="0.9"/>`;
+  }
+  const corridor = `<g class="map-marker" onclick="showCorridorInfo('${areaId}')">
+    ${corridorPillars}
+    <line x1="${w*0.06}" y1="${corridorY}" x2="${w*0.97}" y2="${corridorY}" stroke="#22d3ee" stroke-width="3.5" stroke-dasharray="14 6" opacity="0.92"/>
+    <rect x="${w*0.06}" y="${corridorY-17}" width="196" height="16" rx="4" fill="rgba(255,255,255,.92)"/>
+    <text x="${w*0.06+8}" y="${corridorY-5}" font-size="9.5" fill="#0e7a96" font-weight="700">🚇 ELEVATED TRANSIT CORRIDOR</text>
+  </g>`;
+
+  /* plot boundary outlines + pins for each property */
+  let plots='', pins='';
+  const iw=64, ih=56;
+  markers.forEach((m,mi)=>{
+    const col = TYPE_COLOR[m.type];
+    const pw=88, ph=58;
+    plots += `<rect x="${m.x-pw/2}" y="${m.y-ph/2+16}" width="${pw}" height="${ph}" rx="7" fill="${col}" fill-opacity="0.13" stroke="${col}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+    const labelW = Math.min(120, Math.max(56, m.label.length*5.3));
+    pins += `<g class="map-marker" onclick="${m.fn}" transform="translate(${m.x-iw/2},${m.y-ih-30})">
+      <ellipse cx="${iw/2}" cy="${ih+4}" rx="${iw*0.42}" ry="5" fill="rgba(0,0,0,.4)"/>
+      <g class="b-scale">${isoBuilding(m.type,iw,ih)}</g>
+      <g transform="translate(${iw/2},-8)">
+        <path d="M0,-20 C8,-20 13.5,-14.7 13.5,-7.2 C13.5,2.6 0,15 0,15 C0,15 -13.5,2.6 -13.5,-7.2 C-13.5,-14.7 -8,-20 0,-20 Z" fill="${col}" stroke="#475569" stroke-width="1.3"/>
+        <circle cx="0" cy="-7.2" r="4.6" fill="#ffffff"/>
+      </g>
+      <rect x="${iw/2-labelW/2}" y="${ih+10}" width="${labelW}" height="16" rx="8" fill="rgba(255,255,255,.92)"/>
+      <text x="${iw/2}" y="${ih+21}" font-size="10" text-anchor="middle" fill="#33405e" font-weight="600">${m.label.length>18?m.label.slice(0,17)+'…':m.label}</text>
+    </g>`;
+  });
+
+  let callout='';
+  if(opts.callout && markers.length){
+    const m = markers[0];
+    const cw=182;
+    let cx = m.x + iw/2 + 26, cy = m.y - ih - 46;
+    if(cx+cw>w-8) cx = m.x - iw/2 - cw - 26;
+    if(cx<8) cx = 8;
+    if(cy<8) cy = m.y + 40;
+    callout = `<g transform="translate(${cx},${cy})">
+      <rect width="${cw}" height="60" rx="10" fill="#ffffff" stroke="${TYPE_COLOR[m.type]}" stroke-width="1.4"/>
+      <text x="12" y="19" font-size="10.5" fill="#7a8296">${m.type==='land'?'Plot':'Bldg'} · ${m.type.charAt(0).toUpperCase()+m.type.slice(1)}</text>
+      <text x="12" y="36" font-size="12" fill="#33405e" font-weight="700">${m.label.length>20?m.label.slice(0,20)+'…':m.label}</text>
+      <text x="12" y="51" font-size="10" fill="#7a8296">${m.sub||''}</text>
+    </g>`;
+  }
+
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="sky-${areaId}-${w}x${h}" cx="50%" cy="0%" r="85%">
+      <stop offset="0%" stop-color="#cfe3fb"/><stop offset="100%" stop-color="#eef6ff"/>
+    </radialGradient></defs>
+    <rect width="${w}" height="${h}" fill="url(#sky-${areaId}-${w}x${h})"/>
+    ${rooftops}
+    ${roads}
+    ${corridor}
+    ${green}
+    ${plots}
+    ${pins}
+    ${callout}
+  </svg>`;
+}
+/* Back-compat alias — used by nav map & dashboard snapshot */
+function schematicMapSVG(areaId, height=300, filterType=null){
+  const w = Math.round(height*2.15);
+  return aerialSceneSVG(areaId, w, height, filterType);
+}
+function minimapSVG(areaId,w=240,h=160){
+  const scene = aerialSceneSVG(areaId, w, h, null, {});
+  return scene.replace('<svg ', '<svg style="opacity:.9" ') + `<svg viewBox="0 0 ${w} ${h}" style="position:absolute;top:0;left:0;width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="6" width="${w-12}" height="${h-12}" fill="none" stroke="#8f97f5" stroke-width="3" rx="6"/></svg>`;
+}
+let overviewFilter = null;
+function setOverviewFilter(type, el){
+  overviewFilter = type;
+  document.querySelectorAll('#overview-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderOverviewMap();
+}
+let overviewMapMode = 'map';
+function setOverviewMapMode(mode){
+  overviewMapMode = mode;
+  document.getElementById('ov-map-btn').classList.toggle('active', mode==='map');
+  document.getElementById('ov-sat-btn').classList.toggle('active', mode==='satellite');
+  renderOverviewSatelliteStage();
+}
+function renderOverviewSatelliteStage(){
+  const sel = document.getElementById('area-select');
+  const areaId = sel.value || AREAS[0].id;
+  const areaObj = AREAS.find(a=>a.id===areaId);
+  const src = areaMapEmbedUrl(areaObj, overviewMapMode);
+  document.getElementById('overview-satellite-stage').innerHTML = `
+    <iframe src="${src}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="gmap-toolbar">
+      <button class="${overviewMapMode==='map'?'active':''}" id="ov-map-btn" onclick="setOverviewMapMode('map')">🗺️ Map</button>
+      <button class="${overviewMapMode==='satellite'?'active':''}" id="ov-sat-btn" onclick="setOverviewMapMode('satellite')">🛰️ Satellite</button>
+    </div>
+    <div class="gmap-badge-loc">📍 ${areaObj.name} — real map location</div>`;
+  document.getElementById('overview-about-card').innerHTML = `
+    <h4 style="margin:0 0 6px;font-size:14px;">📍 About ${areaObj.name}</h4>
+    <p class="page-sub" style="margin:0 0 10px;max-width:680px;">${areaObj.about}</p>
+    <div class="map-legend">${areaObj.landmarks.map(l=>`<span>• ${l}</span>`).join('')}</div>
+    <p class="page-sub" style="margin:10px 0 0;font-size:11px;">Locality overview shown for demonstration purposes on this prototype — verify exact boundaries and civic data against official municipal records.</p>`;
+}
+function renderOverviewMap(){
+  const sel = document.getElementById('area-select');
+  const areaId = sel.value || AREAS[0].id;
+  const areaObj = AREAS.find(a=>a.id===areaId);
+  renderOverviewSatelliteStage();
+  const w=900, h=420;
+  const html = `
+    <div class="aerial-stage">
+      <div class="map-wrap">${aerialSceneSVG(areaId, w, h, overviewFilter, {callout:true})}</div>
+      <div class="aerial-toolbar">
+        <div class="abtn" title="Reset view" onclick="renderOverviewMap()">⤢</div>
+        <div class="abtn" title="Zoom in">+</div>
+        <div class="abtn" title="Zoom out">–</div>
+        <div class="abtn" title="Compass">🧭</div>
+      </div>
+      <div class="aerial-loc">📍 ${AREAS.find(a=>a.id===areaId).name}</div>
+      <div class="aerial-badge">🛰️ Overall View</div>
+      <div class="aerial-minimap">${minimapSVG(areaId,240,160)}</div>
+    </div>`;
+  document.getElementById('overview-map').innerHTML = html;
+}
+function initAreaSelect(){
+  const sel = document.getElementById('area-select');
+  sel.innerHTML = AREAS.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  sel.value = 'fairlands';
+}
+
+/* ======================================================================
+   LAND LAYOUT PAGE
+====================================================================== */
+let currentLayout=null;
+function openLandLayout(id){
+  const l = LAND_LAYOUTS.find(x=>x.id===id);
+  currentLayout=l;
+  document.getElementById('landlayout-crumb').textContent = l.name;
+  document.getElementById('landlayout-title').textContent = l.name;
+  document.getElementById('landlayout-sub').textContent = l.addr + ' · ' + l.plots.length + ' plots';
+
+  const cellW=90, cellH=70, pad=14;
+  const w = l.cols*(cellW+pad)+pad, h = l.rows*(cellH+pad)+pad;
+  let rects='';
+  l.plots.forEach(p=>{
+    const x = pad + p.col*(cellW+pad), y = pad + p.row*(cellH+pad);
+    const fill = p.status==='mine' ? '#8f97f5' : p.status==='vacant' ? '#ffe1b0' : '#dbe1f2';
+    const stroke = p.status==='mine' ? '#a5b4fc' : '#aab4d9';
+    rects += `<g class="map-marker" onclick="openPlot('${l.id}','${p.id}')">
+      <rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="${p.status==='mine'?3:1}"/>
+      <text x="${x+cellW/2}" y="${y+cellH/2-3}" font-size="11" text-anchor="middle" fill="#dbe3f5">${p.id.split('-').pop()}</text>
+      <text x="${x+cellW/2}" y="${y+cellH/2+13}" font-size="9.5" text-anchor="middle" fill="#7a8296">${p.status==='mine'?'YOUR PLOT':p.status.toUpperCase()}</text>
+    </g>`;
+  });
+  document.getElementById('landlayout-map').innerHTML = `<div class="map-wrap"><svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><rect width="${w}" height="${h}" fill="#eef1f8"/>${rects}</svg></div>`;
+  document.getElementById('landlayout-grid').innerHTML = l.plots.map(p=>`
+    <div class="unit-cell ${p.status==='mine'?'mine':p.status==='vacant'?'vacant':'occupied'} ${p.govProject?'govproject':''}" onclick="openPlot('${l.id}','${p.id}')">
+      ${p.govProject ? `<span class="project-badge" title="${p.govProject.label} — may affect land rate">${p.govProject.icon}</span>` : ''}
+      <button class="amenity-btn" title="Nearby government amenities" onclick="event.stopPropagation(); showAmenities('${l.id}','${p.id}')">🏛️</button>
+      <div class="u-id">${p.id.split('-').pop()}</div><div class="u-status">${p.status==='mine'?'Yours':p.status}</div>
+    </div>`).join('');
+  showPage('landlayout');
+}
+
+function openPlot(layoutId, plotId){
+  const l = LAND_LAYOUTS.find(x=>x.id===layoutId);
+  const p = l.plots.find(x=>x.id===plotId);
+  currentLayout = l;
+  document.getElementById('plot-crumb-layout').textContent = l.name;
+  document.getElementById('plot-crumb-layout').onclick = ()=>openLandLayout(l.id);
+  document.getElementById('plot-crumb').textContent = p.id;
+  document.getElementById('plot-title').textContent = p.id;
+  document.getElementById('plot-sub').textContent = l.name + ' · ' + l.addr;
+  document.getElementById('plot-length').textContent = p.lengthFt + ' ft';
+  document.getElementById('plot-width').textContent = p.widthFt + ' ft';
+  document.getElementById('plot-area').textContent = p.areaSqft.toLocaleString() + ' sq.ft';
+  document.getElementById('plot-facing').textContent = p.facing + ' facing';
+  document.getElementById('plot-status').textContent = p.status==='mine' ? 'Registered to you' : (p.status==='vacant'?'Vacant':'Sold');
+
+  const ownerCard = document.getElementById('plot-owner-card');
+  if(p.status==='vacant'){
+    ownerCard.innerHTML = `<h4 style="margin:0 0 12px;font-size:14px;">Owner Details</h4><p class="page-sub">This plot is currently vacant / unsold — no registered owner yet.</p>`;
+  } else if(p.status==='mine'){
+    ownerCard.innerHTML = residentCardHTML({owner:{name:'Tahaseen N', id:'OWN200045', aadhaar:'2233 4455 6677', mobile:'9988776655', email:'tahaseen.n@email.com', address:'Attur Main Road, Salem'}});
+  } else if(CURRENT_ROLE==='owner'){
+    ownerCard.innerHTML = `<h4 style="margin:0 0 12px;font-size:14px;">Owner Details</h4>` + privacyNotice('This plot has been sold to another registered owner. Their personal details are private — visible only to that owner or a government official.');
+  } else {
+    ownerCard.innerHTML = residentCardHTML({owner: genOwner(p.id,'OWN')});
+  }
+
+  const area = AREAS.find(a=>a.id===l.area);
+  document.getElementById('plot-directions-btn').onclick = ()=>getDirectionsTo(area.lat, area.lng);
+  renderPlotVLayers(p);
+
+  // Government amenities / project impact — this is public infrastructure
+  // information about the LAND ITSELF, so it stays visible to every logged-in
+  // role including Owner/Citizen, regardless of who the plot belongs to. Only
+  // the other owner's personal identity (handled above) stays private.
+  const amen = AMENITIES[l.area];
+  const nearest = (list)=> list && list[0] ? list[0].name+' · '+list[0].distance : '—';
+  document.getElementById('plot-amenities-card').innerHTML = `
+    <h4 style="margin:0 0 4px;font-size:14px;">🏛️ Government Amenities & Land Impact</h4>
+    <p class="page-sub" style="margin:0 0 12px;max-width:640px;">Nearby government infrastructure and any upcoming project affecting this plot's rate — visible on every plot's record, whoever owns it.</p>
+    ${p.govProject ? `<div style="background:rgba(245,181,89,.12);border:1px solid rgba(245,181,89,.4);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+      <b>${p.govProject.icon} ${p.govProject.label}</b>
+      <p style="margin:6px 0 0;font-size:12px;color:var(--ink-dim);line-height:1.5;">${p.govProject.impact}</p>
+    </div>` : `<p class="page-sub" style="margin:0 0 12px;">No upcoming government project currently flagged on this specific plot.</p>`}
+    <div class="row"><span>🚌 Nearest Public Transport</span><span>${nearest(amen&&amen.transport)}</span></div>
+    <div class="row"><span>🏫 Nearest Govt. School</span><span>${nearest(amen&&amen.schools)}</span></div>
+    <div class="row"><span>🏥 Nearest Govt. Hospital</span><span>${nearest(amen&&amen.hospitals)}</span></div>
+    <div style="margin-top:12px;"><button class="btn ghost sm" onclick="showAmenities('${l.id}','${p.id}')">View full amenities & project details →</button></div>`;
+
+  showPage('plotdetail');
+}
+function plotVLayerBlocks(p){
+  const blocks = [];
+  if(p.govProject){
+    const isMetro = p.govProject.type==='metro';
+    blocks.push({cls:'air', label: p.govProject.label, sub:p.id+(isMetro?'-CORRIDOR-AIR':'-FLYOVER-AIR'), tag:'RESERVED AIRSPACE',
+      desc: p.govProject.impact + ' This airspace above the plot is a separate rights layer, reserved for the project — distinct from the ground-level ownership below it.'});
+  }
+  blocks.push({cls:'floor', label:'Surface Plot', sub:p.id, tag:p.status==='vacant'?'VACANT':(p.status==='mine'?'YOURS':'SOLD'),
+    desc:'The registered surface parcel — '+p.areaSqft.toLocaleString()+' sq.ft, '+p.lengthFt+'×'+p.widthFt+' ft, '+p.facing+' facing.'});
+  blocks.push({cls:'utility', label:'Subsurface Utility Line', sub:p.id+'-UTIL', tag:'EASEMENT',
+    desc:'Water supply, sewage and stormwater lines running beneath this plot as a shared municipal easement — mapped as its own layer, not part of the owner\'s buildable rights.'});
+  return blocks;
+}
+function renderPlotVLayers(p){
+  const blocks = plotVLayerBlocks(p);
+  document.getElementById('plot-vlayers').innerHTML = blocks.map(b=>`
+    <div class="vlayer-row ${b.cls}" title="${b.desc.replace(/"/g,'&quot;')}">
+      <div><div class="vl-name">${b.label}</div><div class="vl-sub">${b.sub}</div></div>
+      <span class="vl-tag">${b.tag}</span>
+    </div>`).join('') + `<p class="page-sub" style="margin:8px 2px 0;">Hover a row for details.</p>`;
+}
+function openInFindPlot(){
+  document.getElementById('nav-select').value = 'land:'+currentLayout.plots.find(p=>p.status==='mine').id;
+  renderNavPlot();
+  showPage('navigate');
+}
+
+/* ======================================================================
+   LAND MAP VIEW — full "real surroundings" style aerial view of a layout,
+   with vacant/sold/mine plots and upcoming government project zones.
+====================================================================== */
+function landLayoutAerialSVG(l){
+  const cellW=90, cellH=70, pad=14;
+  const gridW = l.cols*(cellW+pad)+pad, gridH = l.rows*(cellH+pad)+pad;
+  const w = Math.max(900, gridW+140), h = Math.max(440, gridH+150);
+  const offX = Math.round((w-gridW)/2), offY = Math.round((h-gridH)/2)+18;
+
+  // Background rooftop texture (skipped under the plot grid so it stays readable)
+  let rooftops='';
+  const rcellW=44, rcellH=32;
+  for(let y=-rcellH, ry=0; y<h; y+=rcellH, ry++){
+    const rowOffset=(ry%2)*(rcellW/2);
+    for(let x=-rcellW, cx=0; x<w; x+=rcellW, cx++){
+      const seed=l.id+':bg:'+ry+':'+cx;
+      const hv=hashStr(seed);
+      if(hv%6===0) continue;
+      const midx=x+rowOffset+rcellW/2, midy=y+rcellH/2;
+      if(midx>offX-24 && midx<offX+gridW+24 && midy>offY-24 && midy<offY+gridH+24) continue;
+      const bw=rcellW-7-(hv%9), bh=rcellH-7-(hv%7);
+      rooftops += `<rect x="${x+rowOffset+3}" y="${y+3}" width="${bw}" height="${bh}" rx="2.5" fill="${rooftopFill(seed)}" stroke="#9aa5c0" stroke-width="1"/>`;
+    }
+  }
+  // Scattered greenery
+  let green='';
+  for(let i=0;i<Math.round(w*h/9000);i++){
+    const seed='green:'+l.id+':'+i;
+    const hv=hashStr(seed);
+    const gx=hv%w, gy=(hv>>5)%h;
+    if(gx>offX-12 && gx<offX+gridW+12 && gy>offY-12 && gy<offY+gridH+12) continue;
+    green += `<circle cx="${gx}" cy="${gy}" r="${2.5+hv%4}" fill="#1f6b46" opacity="0.5"/>`;
+  }
+  // Access road running along the top of the layout
+  const roadY = Math.max(28, offY-30);
+  const roads = `<rect x="0" y="${roadY-14}" width="${w}" height="28" fill="#ccd4e8"/>
+    <line x1="0" y1="${roadY}" x2="${w}" y2="${roadY}" stroke="#8b93b0" stroke-width="2" stroke-dasharray="12 9"/>`;
+
+  // Upcoming government project zones — metro corridor along the last column,
+  // flyover works along the first row (closest to the main road)
+  let zones='';
+  const metroX = offX + 5*(cellW+pad);
+  zones += `<rect x="${metroX-6}" y="${offY-10}" width="${cellW+12}" height="${gridH+20}" rx="10" fill="#f5b559" fill-opacity="0.12" stroke="#f5b559" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <text x="${metroX+cellW/2}" y="${offY-18}" text-anchor="middle" font-size="11.5" fill="#f5b559" font-weight="700">🚇 Metro Corridor (Proposed)</text>`;
+  zones += `<rect x="${offX-10}" y="${offY-6}" width="${gridW+20}" height="${cellH+12}" rx="10" fill="#f5b559" fill-opacity="0.10" stroke="#f5b559" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+
+  // Plots
+  let rects='';
+  l.plots.forEach(p=>{
+    const x = offX + p.col*(cellW+pad), y = offY + p.row*(cellH+pad);
+    const fill = p.status==='mine' ? '#8f97f5' : p.status==='vacant' ? '#ffe1b0' : '#dbe1f2';
+    const stroke = p.status==='mine' ? '#a5b4fc' : (p.govProject ? '#f5b559' : '#aab4d9');
+    rects += `<g class="map-marker" onclick="openPlot('${l.id}','${p.id}')">
+      <rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="${(p.status==='mine'||p.govProject)?3:1}"/>
+      <text x="${x+cellW/2}" y="${y+cellH/2-3}" font-size="11" text-anchor="middle" fill="#dbe3f5">${p.id.split('-').pop()}</text>
+      <text x="${x+cellW/2}" y="${y+cellH/2+13}" font-size="9.5" text-anchor="middle" fill="#7a8296">${p.status==='mine'?'YOUR PLOT':p.status.toUpperCase()}</text>
+      ${p.govProject ? `<text x="${x+cellW-14}" y="${y+16}" font-size="13">${p.govProject.icon}</text>` : ''}
+    </g>`;
+  });
+
+  return `<div class="map-wrap"><svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="sky-land-${l.id}" cx="50%" cy="0%" r="85%">
+      <stop offset="0%" stop-color="#cfe3fb"/><stop offset="100%" stop-color="#eef6ff"/>
+    </radialGradient></defs>
+    <rect width="${w}" height="${h}" fill="url(#sky-land-${l.id})"/>
+    ${rooftops}${roads}${green}${zones}${rects}
+  </svg></div>`;
+}
+function openLandMapView(layoutId){
+  const l = LAND_LAYOUTS.find(x=>x.id===layoutId);
+  currentLayout = l;
+  const area = AREAS.find(a=>a.id===l.area);
+  document.getElementById('landmapview-crumb-layout').textContent = l.name;
+  document.getElementById('landmapview-crumb-layout').onclick = ()=>openLandLayout(l.id);
+  document.getElementById('landmapview-title').textContent = l.name + ' — Land Map View';
+  document.getElementById('landmapview-sub').textContent = l.addr + ' · Live map with government project zones highlighted';
+  document.getElementById('landmapview-back-btn').onclick = ()=>openLandLayout(l.id);
+
+  document.getElementById('landmapview-about-card').innerHTML = `
+    <h4 style="margin:0 0 6px;font-size:14px;">📍 About ${area.name}</h4>
+    <p class="page-sub" style="margin:0 0 10px;max-width:680px;">${area.about}</p>
+    <div class="map-legend">${area.landmarks.map(x=>`<span>• ${x}</span>`).join('')}</div>
+    <p class="page-sub" style="margin:10px 0 0;">Click any plot on the real map below to open its details.</p>`;
+
+  landMapMode = 'satellite';
+  document.getElementById('landmapview-map').innerHTML = renderLandMapStage(l);
+  showPage('landmapview');
+}
+
+/* Live map (Google Maps embed) with the plot grid + project zones overlaid on top,
+   plus a toggle to switch between Map / Satellite / Illustrated views. */
+let landMapMode = 'satellite';
+function setLandMapMode(mode){
+  landMapMode = mode;
+  document.getElementById('landmapview-map').innerHTML = renderLandMapStage(currentLayout);
+}
+function renderLandMapStage(l){
+  const area = AREAS.find(a=>a.id===l.area);
+  const mode = landMapMode;
+
+  let bg;
+  if(mode==='illustrated'){
+    bg = `<div style="position:absolute;inset:0;">${landLayoutAerialSVG(l)}</div>`;
+  } else {
+    const t = mode==='satellite' ? '&t=k' : '';
+    const src = `https://maps.google.com/maps?q=${area.lat},${area.lng}&z=17${t}&output=embed`;
+    bg = `<iframe src="${src}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+  }
+
+  // Overlay grid: plots placed as a percentage-based box over the live map so the
+  // real imagery shows through around the layout while plots stay clickable.
+  let plotHtml='', zoneHtml='';
+  if(mode!=='illustrated'){
+    const boxLeft=18, boxTop=14, boxW=64, boxH=72; // % of the stage
+    const cellW = boxW/l.cols, cellH = boxH/l.rows;
+    l.plots.forEach(p=>{
+      const left = boxLeft + p.col*cellW, top = boxTop + p.row*cellH;
+      const bg2 = p.status==='mine' ? 'rgba(143,151,245,.78)' : p.status==='vacant' ? 'rgba(245,181,89,.55)' : 'rgba(219,225,240,.62)';
+      const border = p.status==='mine' ? '#a5b4fc' : (p.govProject ? '#f5b559' : 'rgba(255,255,255,.55)');
+      plotHtml += `<div class="gmap-plotbox" style="left:${left}%;top:${top}%;width:${cellW*0.86}%;height:${cellH*0.8}%;background:${bg2};border:2px solid ${border};" onclick="openPlot('${l.id}','${p.id}')" title="${p.id}">
+        ${p.govProject?`<span class="gp-badge">${p.govProject.icon}</span>`:''}
+        <span class="gp-id">${p.id.split('-').pop()}</span>
+        <span class="gp-status">${p.status==='mine'?'YOURS':p.status.toUpperCase()}</span>
+      </div>`;
+    });
+    const metroLeft = boxLeft + 5*cellW;
+    zoneHtml = `<div class="gmap-zone" style="left:${metroLeft-1}%;top:${boxTop-2}%;width:${cellW+2}%;height:${boxH+4}%;background:rgba(245,181,89,.18);border:2px dashed rgba(245,181,89,.75);"></div>
+      <div class="gmap-zone-label" style="left:${metroLeft-2}%;top:${boxTop-8}%;">🚇 Metro Corridor (Proposed)</div>
+      <div class="gmap-zone" style="left:${boxLeft-2}%;top:${boxTop-2}%;width:${boxW+4}%;height:${cellH+4}%;background:rgba(245,181,89,.14);border:2px dashed rgba(245,181,89,.65);"></div>
+      <div class="gmap-zone-label" style="left:${boxLeft-2}%;top:${boxTop+cellH+2}%;">🚧 Flyover — Upcoming</div>`;
+  }
+
+  const toolbar = `<div class="gmap-toolbar">
+    <button class="${mode==='map'?'active':''}" onclick="setLandMapMode('map')">🗺️ Map</button>
+    <button class="${mode==='satellite'?'active':''}" onclick="setLandMapMode('satellite')">🛰️ Satellite</button>
+    <button class="${mode==='illustrated'?'active':''}" onclick="setLandMapMode('illustrated')">✏️ Illustrated</button>
+  </div>`;
+
+  return `<div class="gmap-stage">
+    ${bg}
+    <div class="gmap-overlay">${zoneHtml}${plotHtml}</div>
+    ${toolbar}
+    <div class="gmap-badge-loc">📍 ${l.name}, ${area.name}</div>
+  </div>`;
+}
+
+/* ======================================================================
+   PROPERTY DETAIL (apartment / complex)
+====================================================================== */
+let currentProp=null, activeFloor=null;
+function openProp(id){
+  const p = APARTMENTS.find(x=>x.id===id) || COMPLEXES.find(x=>x.id===id);
+  currentProp = p;
+  const catName = p.type==='apartment' ? 'Apartments' : 'Complexes';
+  document.getElementById('prop-crumb-cat').textContent = catName;
+  document.getElementById('prop-crumb-cat').onclick = ()=>showPage(p.type==='apartment'?'apartments':'complexes');
+  document.getElementById('prop-crumb').textContent = p.name;
+  document.getElementById('prop-title').textContent = p.name;
+  document.getElementById('prop-sub').textContent = 'ULPIN: ' + p.ulpin + ' · ' + p.addr;
+  setPhotoOrFallback('prop-photo', p.photo, p.type, p.name);
+  document.getElementById('prop-floors').textContent = 'G+' + (p.floorsCount-1);
+  document.getElementById('prop-units').textContent = p.floors.reduce((s,f)=>s+f.units.length,0);
+  document.getElementById('prop-plotarea').textContent = p.plotArea;
+  document.getElementById('prop-builtup').textContent = p.builtUp;
+
+  const area = AREAS.find(a=>a.id===p.area);
+  document.getElementById('prop-directions-btn').onclick = ()=>getDirectionsTo(area.lat, area.lng);
+
+  renderFloorList();
+  renderVerticalLayers(p);
+  if(canViewBreakdown(p.id)) renderPropLandBreakdown(p);
+  else document.getElementById('prop-landbreakdown').innerHTML = breakdownPrivacyNotice();
+  activeFloor = p.floors.find(f=>f.units.length);
+  document.getElementById('prop-resident-detail').innerHTML = '';
+  document.getElementById('prop-resident-hint').style.display='block';
+  propTab('floors');
+  showPage('propdetail');
+}
+function renderFloorList(){
+  document.getElementById('prop-floorlist').innerHTML = currentProp.floors.map(f=>`
+    <div class="floor-item" onclick="selectFloor('${f.name}')">
+      <span>${f.name}</span><span class="occ">${f.units.length ? f.units.length + ' units' : 'Common area'}</span>
+    </div>`).join('');
+}
+function selectFloor(name){ activeFloor = currentProp.floors.find(f=>f.name===name); propTab('units'); }
+function unitSeed(prop, floorName, unitId){ return prop.id+'-'+floorName+'-'+unitId; }
+function unitOccupied(seed){ if(seed==='green-101'||DEMO_HOUSEHOLDS[seed]||COMPLEX_DEMO_DETAILS[seed]) return true; return hashStr(seed)%5!==0; } // ~80% occupied; demo units always occupied
+function renderUnitGrid(){
+  const floors = activeFloor ? [activeFloor] : currentProp.floors.filter(f=>f.units.length);
+  let html='';
+  floors.forEach(f=>{
+    f.units.forEach(u=>{
+      const seed = (currentProp.id==='apt-green-garden' && u==='101') ? 'green-101' : unitSeed(currentProp, f.name, u);
+      const occupied = seed==='green-101' ? true : unitOccupied(seed);
+      html += `<div class="unit-cell ${occupied?'occupied':'vacant'}" onclick="showUnit('${f.name}','${u}')">
+        <div class="u-id">${u}</div><div class="u-status">${f.name} · ${occupied?'occupied':'vacant'}</div></div>`;
+    });
+  });
+  document.getElementById('prop-unitgrid').innerHTML = html || '<p class="page-sub">No units on this level.</p>';
+}
+function showUnit(floorName, unitId){
+  propTab('residents');
+  document.getElementById('prop-resident-hint').style.display='none';
+  const seed = (currentProp.id==='apt-green-garden' && unitId==='101') ? 'green-101' : unitSeed(currentProp, floorName, unitId);
+  const occupied = seed==='green-101' ? true : unitOccupied(seed);
+  const commercial = currentProp.type==='complex';
+  const mine = canViewPersonal(currentProp.id, unitId);
+  if(!mine){
+    document.getElementById('prop-resident-detail').innerHTML = `
+      <div style="margin-bottom:12px;"><h4 style="margin:0;font-size:14px;">Unit ${unitId} — ${floorName}</h4>
+      <p class="page-sub" style="margin:4px 0 0;">This unit is currently ${occupied?'occupied':'vacant'}.</p></div>
+      ${privacyNotice('You can see that this unit is '+(occupied?'occupied':'vacant')+', but the owner, tenant and household details of another resident are private and only visible to that resident or a government official.')}`;
+    return;
+  }
+  const d = unitFullDetail(seed, occupied, commercial);
+  document.getElementById('prop-resident-detail').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <h4 style="margin:0;font-size:14px;">Unit ${unitId} — ${floorName}</h4>
+      ${!commercial ? `<button class="btn primary sm" onclick="openHouseDetail('${floorName}','${unitId}')">View Full House Details${d.household ? ' · '+d.household.totalMembers+' residents' : ''}</button>` : ''}
+    </div>
+    ${commercial ? `<div class="card">${residentCardHTML(d, 'Unit Ownership & Occupancy')}</div>` : `
+    <div class="grid cols-3">
+      <div class="card">${residentCardHTML({owner:d.owner}, 'Owner')}</div>
+      <div class="card">${d.tenant ? residentCardHTML({owner:d.tenant}, 'Tenant / Rented Details').replace('Owner ID','Tenant ID') : '<h4 style="margin:0 0 10px;font-size:13.5px;">Tenant / Rented Details</h4><p class="page-sub">Owner-occupied — no tenant on record.</p>'}</div>
+      <div class="card">${d.lease ? residentCardHTML({owner:{name:d.lease.holder, id:d.lease.id, aadhaar:d.lease.aadhaar, mobile:'—', email:'—', address:'—'}}, 'Lease Details').replace('Owner ID','Lease ID') : '<h4 style="margin:0 0 10px;font-size:13.5px;">Lease Details</h4><p class="page-sub">Not under a commercial lease.</p>'}</div>
+    </div>`}`;
+}
+
+/* ======================================================================
+   INDIVIDUAL HOUSE DETAIL PAGE — full household / occupant record
+====================================================================== */
+let currentHouse=null;
+function openHouseDetail(floorName, unitId){
+  const prop = currentProp;
+  const mine = canViewPersonal(prop.id, unitId);
+  const seed = (prop.id==='apt-green-garden' && unitId==='101') ? 'green-101' : unitSeed(prop, floorName, unitId);
+  const occupied = seed==='green-101' ? true : unitOccupied(seed);
+  const d = unitFullDetail(seed, occupied, false);
+  currentHouse = {prop, floorName, unitId, d, seed};
+
+  document.getElementById('house-crumb-building').textContent = prop.name;
+  document.getElementById('house-crumb-building').onclick = ()=>openProp(prop.id);
+  document.getElementById('house-crumb-unit').textContent = 'House ' + unitId;
+  document.getElementById('house-title').textContent = 'House ' + unitId;
+  document.getElementById('house-sub').textContent = prop.name + ' · ' + floorName + ' · ' + prop.addr;
+  setPhotoOrFallback('house-photo', prop.photo, prop.type, prop.name+' — Unit '+unitId);
+  if(canViewBreakdown(prop.id, unitId)) renderHouseLandBreakdown(prop, floorName, unitId, seed);
+  else document.getElementById('house-landbreakdown').innerHTML = breakdownPrivacyNotice();
+
+  if(!mine){
+    document.getElementById('house-occtype').textContent = !occupied ? 'Vacant' : 'Occupied (details private)';
+    document.getElementById('house-parking').textContent = '🔒 Private';
+    document.getElementById('house-headcount').innerHTML = `<span class="page-sub" style="margin:0;">Household size and member details for this unit are private — visible only to that resident or a government official.</span>`;
+    document.getElementById('house-members').innerHTML = '';
+    document.getElementById('house-contact-card').innerHTML = `<h4 style="margin:0 0 10px;font-size:13.5px;">Primary Contact</h4>` + privacyNotice();
+    showPage('housedetail');
+    return;
+  }
+
+  const occupantName = occupied ? (d.tenant ? d.tenant.name : d.owner.name) : null;
+  document.getElementById('house-occtype').textContent = !occupied ? 'Vacant' : (d.tenant ? 'Rented (Tenant-occupied)' : 'Owner-occupied');
+  const pbay = parkingBayForUnit(prop, floorName, unitId);
+  document.getElementById('house-parking').innerHTML = pbay
+    ? `<a onclick="openProp('${prop.id}');propTab('parking');setTimeout(()=>showParkingBay('${pbay.id}'),50);">${pbay.id} →</a>`
+    : 'Not allotted';
+  document.getElementById('house-headcount').innerHTML = occupied && d.household
+    ? `<span class="headcount-badge">👨‍👩‍👧‍👦 ${d.household.totalMembers} people currently live here</span>`
+    : `<span class="page-sub" style="margin:0;">This unit is currently vacant — no household on record.</span>`;
+
+  document.getElementById('house-members').innerHTML = (occupied && d.household)
+    ? d.household.members.map(m=>`<div class="household-member"><span>${m.name}</span><span class="rel">${m.relation} · Age ${m.age}</span></div>`).join('')
+    : '';
+
+  document.getElementById('house-contact-card').innerHTML =
+    (d.tenant ? residentCardHTML({owner:d.tenant}, 'Primary Contact (Tenant)').replace('Owner ID','Tenant ID') : residentCardHTML({owner:d.owner}, 'Primary Contact (Owner)'));
+
+  showPage('housedetail');
+}
+function propTab(tab){
+  document.querySelectorAll('#app .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  document.getElementById('prop-tab-floors').style.display = tab==='floors' ? 'block':'none';
+  document.getElementById('prop-tab-units').style.display = tab==='units' ? 'block':'none';
+  document.getElementById('prop-tab-parking').style.display = tab==='parking' ? 'block':'none';
+  document.getElementById('prop-tab-residents').style.display = tab==='residents' ? 'block':'none';
+  if(tab==='units') renderUnitGrid();
+  if(tab==='parking') renderParkingTab();
+}
+
+/* ======================================================================
+   SHOP DETAIL
+====================================================================== */
+let currentShop=null;
+function openShop(id){
+  const s = SHOPS.find(x=>x.id===id);
+  currentShop = s;
+  document.getElementById('shop-crumb').textContent = s.name;
+  document.getElementById('shop-title').textContent = s.name;
+  document.getElementById('shop-sub').textContent = 'ULPIN: ' + s.ulpin + ' · ' + s.addr;
+  setPhotoOrFallback('shop-photo', s.photo, 'shop', s.name);
+  document.getElementById('shop-area').textContent = s.shopArea;
+  document.getElementById('shop-frontage').textContent = s.frontage;
+  document.getElementById('shop-usage').textContent = s.usage;
+  document.getElementById('shop-status').textContent = s.status;
+  const d = unitFullDetail(s.id, s.status==='Occupied', true, s.occupancy);
+  document.getElementById('shop-ownership').textContent = d.occupancy==='rented' ? 'Owner-Owned · Rented Out' : 'Owner-Owned · Run by Owner';
+  document.getElementById('shop-owner-card').innerHTML = (CURRENT_ROLE==='owner')
+    ? `<h4 style="margin:0 0 10px;font-size:13.5px;">Owner Details</h4>` + privacyNotice('This shop is not registered under your account, so its owner/tenant details are private. Only a government official or the shop\'s own registered owner can view them.')
+    : residentCardHTML(d, 'Owner Details');
+  const area = AREAS.find(a=>a.id===s.area);
+  document.getElementById('shop-directions-btn').onclick = ()=>getDirectionsTo(area.lat, area.lng);
+  const sbays = genShopParking(s);
+  document.getElementById('shop-parking-row').innerHTML = sbays.map(b=>`
+    <div class="shop-parking-pill">
+      <span style="font-size:18px;">${PARKING_ICON[b.type]}</span>
+      <b>${b.id}</b>
+      <span>${b.type==='visitor' ? 'Visitor bay' : 'Allotted to shop'}</span>
+    </div>`).join('');
+  showPage('shopdetail');
+}
+
+/* ======================================================================
+   3D MODAL (with windows + auto-rotate)
+====================================================================== */
+let rotY=28, rotX=-14, autoRotating=false;
+function buildFloors(floorsCount, floorHeightFt, footprint, photoUrl){
+  const b = document.getElementById('building3d');
+  const totalPx = 220, floorPx = totalPx/floorsCount;
+  const widthPx = 200, sidePx = 76;
+
+  const frontStyle = photoUrl
+    ? `background-image:linear-gradient(180deg, rgba(10,15,26,.04), rgba(10,15,26,.20)), url('${photoUrl}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(180deg,#c9d3ea,#aebbdb);`;
+
+  let frontOverlay='', sideOverlay='';
+  for(let i=0;i<floorsCount;i++){
+    const bottom = i*floorPx;
+    if(i>0) frontOverlay += `<div class="floor-line" style="bottom:${bottom}px;"></div>`;
+    frontOverlay += `<div class="balcony-rail" style="bottom:${bottom+3}px;"></div>`;
+    const cols = 5;
+    for(let c=0;c<cols;c++){
+      const wx = 12+c*(widthPx-24)/(cols-1)-6;
+      const lit = (i+c)%3!==0;
+      frontOverlay += `<div class="win-glass ${lit?'lit':''}" style="left:${wx}px;bottom:${bottom+floorPx*0.28}px;width:14px;height:${floorPx*0.42}px;"></div>`;
+    }
+    for(let c=0;c<3;c++){
+      const wx = 10+c*(sidePx-20)/2;
+      const lit=(i+c)%2===0;
+      sideOverlay += `<div class="win-glass side ${lit?'lit':''}" style="left:${wx}px;bottom:${bottom+floorPx*0.28}px;width:10px;height:${floorPx*0.42}px;"></div>`;
+    }
+  }
+
+  const roofExtra = `<div class="roof-tank" style="bottom:${totalPx+7}px;left:${widthPx*0.16}px;"></div>
+    <div class="roof-tank sm" style="bottom:${totalPx+7}px;left:${widthPx*0.6}px;"></div>
+    <div class="roof-antenna" style="bottom:${totalPx+7}px;left:${widthPx*0.42}px;"></div>
+    <div class="airrights-volume" style="bottom:${totalPx+34}px;height:56px;"><div class="airrights-label">AIR RIGHTS</div></div>`;
+
+  b.innerHTML = `
+    <div class="basement-slab"><div class="basement-label">🅿️ PARKING + UTILITIES</div></div>
+    <div class="roof-cap" style="bottom:${totalPx}px;"></div>
+    ${roofExtra}
+    <div class="face-front" style="height:${totalPx}px;${frontStyle}">
+      <div class="entrance-canopy"></div>
+      ${frontOverlay}
+    </div>
+    <div class="face-side" style="height:${totalPx}px;filter:brightness(.82);">
+      ${sideOverlay}
+    </div>`;
+  rotY=28; rotX=-14;
+  b.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+}
+function open3DModal(){
+  const p = currentProp;
+  document.getElementById('modal3d-title').textContent = p.name + ' — 3D Model';
+  document.getElementById('modal3d-sub').textContent = 'Drag to rotate, or use auto-rotate';
+  document.getElementById('modal3d-footprint').textContent = p.footprint.l+' × '+p.footprint.w+' ft';
+  document.getElementById('modal3d-height').textContent = (p.floorsCount*p.floorHeightFt)+' ft';
+  document.getElementById('modal3d-floors').textContent = 'G+'+(p.floorsCount-1);
+  document.getElementById('modal3d-parking').textContent = genParkingLot(p).length + ' (Basement)';
+  document.getElementById('building3d').className = 'building3d';
+  buildFloors(p.floorsCount, p.floorHeightFt, p.footprint, p.photo);
+  document.getElementById('modal3d').classList.add('show');
+}
+function open3DModalShop(){
+  const s = currentShop;
+  document.getElementById('modal3d-title').textContent = s.name + ' — 3D Model';
+  document.getElementById('modal3d-sub').textContent = 'Drag to rotate, or use auto-rotate';
+  document.getElementById('modal3d-footprint').textContent = '40 × 55 ft';
+  document.getElementById('modal3d-height').textContent = '14 ft';
+  document.getElementById('modal3d-floors').textContent = 'Ground only';
+  document.getElementById('modal3d-parking').textContent = genShopParking(s).length + ' (Frontage)';
+  document.getElementById('building3d').className = 'building3d';
+  buildFloors(1, 14, {l:40,w:55}, s.photo);
+  document.getElementById('modal3d').classList.add('show');
+}
+function open3DModalHouse(){
+  const h = currentHouse;
+  document.getElementById('modal3d-title').textContent = h.prop.name + ' — Unit ' + h.unitId + ' — 3D House Model';
+  document.getElementById('modal3d-sub').textContent = 'Drag to rotate, or use auto-rotate';
+  document.getElementById('modal3d-footprint').textContent = '30 × 40 ft';
+  document.getElementById('modal3d-height').textContent = '16 ft';
+  document.getElementById('modal3d-floors').textContent = 'Independent house';
+  const hpbay = parkingBayForUnit(h.prop, h.floorName, h.unitId);
+  document.getElementById('modal3d-parking').textContent = hpbay ? '1 (Shared basement)' : 'Not allotted';
+  buildHouseModel(h.prop.photo);
+  document.getElementById('modal3d').classList.add('show');
+}
+function buildHouseModel(photoUrl){
+  const b = document.getElementById('building3d');
+  b.className = 'house3d';
+  const frontStyle = photoUrl
+    ? `background-image:linear-gradient(180deg, rgba(10,15,26,.03), rgba(10,15,26,.18)), url('${photoUrl}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(180deg,#e0c9a6,#c9ad82);`;
+  b.innerHTML = `
+    <div class="house-yard-wall"></div>
+    <div class="house-gate"></div>
+    <div class="house-tree" style="left:-24px;"><div class="canopy"></div><div class="trunk"></div></div>
+    <div class="house-tree" style="left:180px;"><div class="canopy" style="width:20px;height:20px;"></div><div class="trunk"></div></div>
+    <div class="house-roof-side"></div>
+    <div class="house-wall-side"><div class="house-window off" style="left:20px;bottom:34px;width:16px;height:16px;"></div></div>
+    <div class="house-roof-front"></div>
+    <div class="house-wall-front" style="${frontStyle}">
+      <div class="house-door"></div>
+      <div class="house-window" style="left:20px;bottom:40px;"></div>
+      <div class="house-window" style="right:20px;bottom:40px;"></div>
+    </div>`;
+  rotY=28; rotX=-14;
+  b.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+}
+function close3DModal(){ document.getElementById('modal3d').classList.remove('show'); autoRotating=false; }
+function autoRotate360(){
+  if(autoRotating) return;
+  autoRotating=true;
+  const start=rotY, dur=2200, t0=performance.now();
+  function step(t){
+    if(!autoRotating) return;
+    const p=Math.min(1,(t-t0)/dur);
+    rotY = start + p*360;
+    document.getElementById('building3d').style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    if(p<1) requestAnimationFrame(step); else autoRotating=false;
+  }
+  requestAnimationFrame(step);
+}
+(function(){
+  const stage = document.getElementById('stage3d');
+  let dragging=false, lastX=0, lastY=0;
+  stage.addEventListener('mousedown', e=>{dragging=true; autoRotating=false; lastX=e.clientX; lastY=e.clientY; stage.style.cursor='grabbing';});
+  window.addEventListener('mouseup', ()=>{dragging=false; stage.style.cursor='grab';});
+  window.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    rotY += (e.clientX-lastX)*0.4;
+    rotX -= (e.clientY-lastY)*0.4;
+    rotX = Math.max(-60, Math.min(20, rotX));
+    lastX=e.clientX; lastY=e.clientY;
+    document.getElementById('building3d').style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  });
+})();
+
+/* ======================================================================
+   DIRECTIONS
+====================================================================== */
+function getDirectionsTo(lat, lng){
+  if(!navigator.geolocation){ window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{ window.open(`https://www.google.com/maps/dir/?api=1&origin=${pos.coords.latitude},${pos.coords.longitude}&destination=${lat},${lng}&travelmode=driving`,'_blank'); },
+    ()=>{ window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank'); }
+  );
+}
+
+/* ======================================================================
+   FIND MY PLOT
+====================================================================== */
+function initNavSelect(){
+  const sel = document.getElementById('nav-select');
+  let opts='';
+  MY_PROPERTIES.forEach(mp=>{
+    if(mp.kind==='apartment-unit') opts += `<option value="apt:${mp.propId}:${mp.unit}">${mp.label}</option>`;
+    else opts += `<option value="land:${mp.plotId}">${mp.label}</option>`;
+  });
+  sel.innerHTML = opts;
+}
+function renderNavPlot(){
+  const val = document.getElementById('nav-select').value;
+  const [kind, a, b] = val.split(':');
+  if(kind==='land'){
+    const layout = LAND_LAYOUTS[0];
+    const plot = layout.plots.find(p=>p.id===a);
+    document.getElementById('nav-plot-name').textContent = plot.id;
+    document.getElementById('nav-plot-addr').textContent = layout.name+', '+layout.addr;
+    const cellW=90, cellH=70, pad=14;
+    const w = layout.cols*(cellW+pad)+pad, h = layout.rows*(cellH+pad)+pad;
+    let rects='';
+    layout.plots.forEach(p=>{
+      const x = pad + p.col*(cellW+pad), y = pad + p.row*(cellH+pad);
+      const isMine = p.id===plot.id;
+      rects += `<g><rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="6" fill="${isMine?'#8f97f5':'#dbe1f2'}" stroke="${isMine?'#a5b4fc':'#aab4d9'}" stroke-width="${isMine?3:1}" opacity="${isMine?1:0.45}"/>
+        <text x="${x+cellW/2}" y="${y+cellH/2+4}" font-size="11" text-anchor="middle" fill="${isMine?'#fff':'#7a8296'}">${p.id.split('-').pop()}</text></g>`;
+      if(isMine) rects += `<circle cx="${x+cellW/2}" cy="${y-6}" r="5" fill="#6fd99a"><animate attributeName="r" values="5;9;5" dur="1.4s" repeatCount="indefinite"/></circle>`;
+    });
+    document.getElementById('nav-map').innerHTML = `<div class="map-wrap"><svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><rect width="${w}" height="${h}" fill="#eef1f8"/>${rects}</svg></div>`;
+    document.getElementById('nav-distance').textContent = '120 m';
+    document.getElementById('nav-time').textContent = '2 min';
+    const area = AREAS.find(ar=>ar.id===layout.area);
+    document.getElementById('nav-start-btn').onclick = ()=>getDirectionsTo(area.lat, area.lng);
+  } else {
+    const prop = APARTMENTS.find(p=>p.id===a);
+    document.getElementById('nav-plot-name').textContent = prop.name + ' — Unit ' + b;
+    document.getElementById('nav-plot-addr').textContent = prop.addr;
+    document.getElementById('nav-map').innerHTML = `<div class="map-wrap">${schematicMapSVG(prop.area, 240)}</div>`;
+    document.getElementById('nav-distance').textContent = '40 m';
+    document.getElementById('nav-time').textContent = '1 min';
+    const area = AREAS.find(ar=>ar.id===prop.area);
+    document.getElementById('nav-start-btn').onclick = ()=>getDirectionsTo(area.lat, area.lng);
+  }
+}
+
+/* ======================================================================
+   LOGIN
+====================================================================== */
+document.querySelectorAll('.role-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.role-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(btn.dataset.role==='official'){ document.getElementById('userid').value='GO12345'; document.getElementById('password').value='demo@1234'; }
+    else { document.getElementById('userid').value='OWN100512'; document.getElementById('password').value='owner@1234'; }
+  });
+});
+function tryLogin(){
+  const uid = document.getElementById('userid').value.trim();
+  const pwd = document.getElementById('password').value.trim();
+  const errEl = document.getElementById('login-error');
+  const validOfficial = (uid==='GO12345' && pwd==='demo@1234');
+  const validOwner = (uid==='OWN100512' && pwd==='owner@1234');
+  if(!validOfficial && !validOwner){ errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('show');
+  if(validOfficial){
+    CURRENT_ROLE = 'official';
+    document.getElementById('userchip-av').textContent='GO';
+    document.getElementById('userchip-label').textContent='Govt. Official · GO12345';
+    document.getElementById('dash-welcome').textContent='Welcome back, Officer';
+  } else {
+    CURRENT_ROLE = 'owner';
+    document.getElementById('userchip-av').textContent='AK';
+    document.getElementById('userchip-label').textContent='Mr. Arvind Kumar · OWN100512';
+    document.getElementById('dash-welcome').textContent='Welcome back, Arvind';
+  }
+  initAll();
+}
+function logout(){
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+/* ======================================================================
+   GLOBAL SEARCH — by ULPIN, owner name or tenant name
+====================================================================== */
+let SEARCH_INDEX = [];
+let SEARCH_MATCHES = [];
+function buildSearchIndex(){
+  SEARCH_INDEX = [];
+  const gov = CURRENT_ROLE==='official';
+
+  // Land plots (searchable by ULPIN/plot id, owner name and Aadhaar once sold/registered)
+  LAND_LAYOUTS.forEach(l=>{
+    l.plots.forEach(p=>{
+      const showOwner = gov || p.status==='mine';
+      const ownerObj = p.status==='mine' ? {name:'Tahaseen N', aadhaar:'2233 4455 6677'} : (p.status==='sold' ? genOwner(p.id,'OWN') : null);
+      SEARCH_INDEX.push({
+        type:'Land Plot', title:p.id,
+        sub:l.name+' · '+l.addr+(!ownerObj ? ' · Vacant' : (showOwner ? ' · Owner: '+ownerObj.name : ' · Owner: 🔒 Private')),
+        keywords:[p.id, showOwner&&ownerObj?ownerObj.name:null, showOwner&&ownerObj?ownerObj.aadhaar:null],
+        action:()=>openPlot(l.id, p.id)
+      });
+    });
+  });
+
+  // Buildings (searchable by ULPIN / name)
+  APARTMENTS.forEach(p=> SEARCH_INDEX.push({type:'Apartment', title:p.name, sub:p.ulpin+' · '+p.addr, keywords:[p.name,p.ulpin], action:()=>openProp(p.id)}));
+  SHOPS.forEach(s=> SEARCH_INDEX.push({type:'Shop', title:s.name, sub:s.ulpin+' · '+s.addr, keywords:[s.name,s.ulpin], action:()=>openShop(s.id)}));
+  COMPLEXES.forEach(c=> SEARCH_INDEX.push({type:'Complex', title:c.name, sub:c.ulpin+' · '+c.addr, keywords:[c.name,c.ulpin], action:()=>openProp(c.id)}));
+
+  // Individual units (searchable by owner name or tenant name — redacted for other people when logged in as an owner)
+  [...APARTMENTS, ...COMPLEXES].forEach(prop=>{
+    prop.floors.forEach(f=>{
+      f.units.forEach(u=>{
+        const seed = (prop.id==='apt-green-garden' && u==='101') ? 'green-101' : unitSeed(prop, f.name, u);
+        const occupied = seed==='green-101' ? true : unitOccupied(seed);
+        const commercial = prop.type==='complex';
+        const d = unitFullDetail(seed, occupied, commercial);
+        const showPersonal = gov || canViewPersonal(prop.id, u);
+        const tenantName = d.tenant ? d.tenant.name : null;
+        SEARCH_INDEX.push({
+          type: commercial ? 'Complex Unit' : 'House / Unit',
+          title: prop.name+' — Unit '+u,
+          sub: (showPersonal ? ((tenantName ? 'Tenant: '+tenantName+' · ' : '')+'Owner: '+d.owner.name) : '🔒 Resident details private') + ' · ' + f.name,
+          keywords:[prop.name, prop.ulpin, u,
+            showPersonal?d.owner.name:null, showPersonal?d.owner.aadhaar:null,
+            showPersonal?tenantName:null, showPersonal&&d.tenant?d.tenant.aadhaar:null],
+          action:()=>{ openProp(prop.id); selectFloor(f.name); showUnit(f.name,u); }
+        });
+      });
+    });
+  });
+}
+function handleGlobalSearch(raw){
+  const box = document.getElementById('search-results');
+  const q = raw.trim().toLowerCase();
+  if(q.length<2){ box.classList.remove('show'); box.innerHTML=''; return; }
+  const qFlat = q.replace(/\s+/g,'');
+  SEARCH_MATCHES = SEARCH_INDEX.filter(item=> item.keywords.some(k=>{
+    if(!k) return false;
+    const kl = String(k).toLowerCase();
+    return kl.includes(q) || kl.replace(/\s+/g,'').includes(qFlat);
+  })).slice(0,8);
+  if(!SEARCH_MATCHES.length){
+    box.innerHTML = `<div class="search-result-empty">No matches for "${raw}" in ULPIN, Aadhaar, owner or tenant names.</div>`;
+  } else {
+    box.innerHTML = SEARCH_MATCHES.map((m,i)=>`
+      <div class="search-result-item" onclick="triggerSearchResult(${i})">
+        <div class="sr-type">${m.type}</div>
+        <div class="sr-title">${m.title}</div>
+        <div class="sr-sub">${m.sub}</div>
+      </div>`).join('');
+  }
+  box.classList.add('show');
+}
+function triggerSearchResult(i){
+  const m = SEARCH_MATCHES[i];
+  if(!m) return;
+  m.action();
+  document.getElementById('search-results').classList.remove('show');
+  document.getElementById('global-search').value='';
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#search-wrap')) document.getElementById('search-results').classList.remove('show');
+});
+
+/* ======================================================================
+   INIT
+====================================================================== */
+function initAll(){
+  initAreaSelect();
+  renderOverviewMap();
+  renderLists();
+  buildSearchIndex();
+  document.getElementById('dash-map').innerHTML = `
+    <div class="aerial-stage">
+      <div class="map-wrap">${aerialSceneSVG('fairlands', 780, 300, null, {callout:true})}</div>
+      <div class="aerial-toolbar">
+        <div class="abtn" title="Zoom in">+</div>
+        <div class="abtn" title="Zoom out">–</div>
+        <div class="abtn" title="Compass">🧭</div>
+      </div>
+      <div class="aerial-badge">🛰️ Overall View</div>
+      <div class="aerial-minimap">${minimapSVG('fairlands',240,160)}</div>
+    </div>`;
+  initNavSelect();
+  renderNavPlot();
+  showPage('dashboard');
+}
+</script>
+</body>
+</html>
