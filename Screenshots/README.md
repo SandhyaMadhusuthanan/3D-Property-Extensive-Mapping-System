@@ -1,45 +1,43 @@
 # Application Screenshots
 
-This directory contains visual walkthroughs of the **ULPIN 3D** property mapping application interface.
+This directory catalogs all interface views and workflow stages of the **ULPIN 3D** application.
 
 ---
 
-### 1. Login Screen
-![Login Screen](./Login.png)
-*Secure authentication portal for land authorities and administrators.*
+### 1. Login Authentication
+![Login](./login.png)
+*Secure login portal for land administration authorities.*
 
 ---
 
-### 2. Main Dashboard
+### 2. Main Dashboards
+**Primary Dashboard View:**
 ![Dashboard](./Dashboard.png)
-*Overview dashboard displaying active spatial layers and parcel records.*
+*Overview showing active spatial metrics and system modules.*
+
+**Secondary Dashboard View:**
+![Dashboard 2](./dashboaard2.png)
+*Alternative dashboard layout tracking property layers.*
 
 ---
 
-### 3. Overview Map
-![Overview Map](./Overview-Map.png)
-*Geo-referenced map layer showing cadastral parcel boundaries.*
+### 3. Overview Maps
+**Overview Map 1:**
+![Overview](./Overview.png)
+*Geo-referenced map layer displaying cadastral parcel boundaries.*
+
+**Overview Map 2:**
+![Overview 2](./Overview2.png)
+*Detailed spatial overview with elevation layers.*
 
 ---
 
-### 4. Property Details
-![Property Details](./Property-Details.png)
-*Detailed view of ownership, elevation range, and metadata for a selected property.*
+### 4. Land Breakdown Views
+*The system provides multi-tiered hierarchical breakdowns from parcel footprints down to individual property units:*
 
----
-
-### 5. 3D Model View
-![3D Model](./3D-Model.png)
-*Interactive 3D rendering of buildings, stacked floors, and volumetric property units.*
-
----
-
-### 6. Land Breakdown
-![Land Breakdown](./Land-breakdown.png)
-*Hierarchical breakdown view of the parcel, building, floor, and unit structure.*
-
----
-
-### 7. Find My Plot
-![Find My Plot](./Find-My-Plot.png)
-*Search and location interface designed to quickly pinpoint specific plots.*
+* **View 1:** ![Land Breakdown 1](./Landbreakdown1.png)
+* **View 2:** ![Land Breakdown 2](./Landbreakdown2.png)
+* **View 3:** ![Land Breakdown 3](./Landbreakdown3.png)
+* **View 4:** ![Land Breakdown 4](./Landbreakdown4.png)
+* **View 5:** ![Land Breakdown 5](./Landbreakdown5.png)
+*
