@@ -6,29 +6,18 @@ This directory catalogs all interface views and workflow stages of the **ULPIN 3
 
 ### 1. Login Authentication
 ![Login](./login.png)
-*Secure login portal for land administration authorities.*
 
 ---
 
 ### 2. Main Dashboards
-**Primary Dashboard View:**
-![Dashboard](./Dashboard.png)
-*Overview showing active spatial metrics and system modules.*
-
-**Secondary Dashboard View:**
-![Dashboard 2](./dashboaard2.png)
-*Alternative dashboard layout tracking property layers.*
+* **Primary Dashboard:** ![Dashboard](./Dashboard.png)
+* **Secondary Dashboard:** ![Dashboard 2](./dashboaard2.png)
 
 ---
 
 ### 3. Overview Maps
-**Overview Map 1:**
-![Overview](./Overview.png)
-*Geo-referenced map layer displaying cadastral parcel boundaries.*
-
-**Overview Map 2:**
-![Overview 2](./Overview2.png)
-*Detailed spatial overview with elevation layers.*
+* **Overview 1:** ![Overview](./Overview.png)
+* **Overview 2:** ![Overview2](./Overview2.png)
 
 ---
 
@@ -44,15 +33,10 @@ This directory catalogs all interface views and workflow stages of the **ULPIN 3
 ### 5. Room Breakdown Views
 * **Room View 1:** ![Room Breakdown 1](./roombreakdown1.png)
 * **Room View 2:** ![Room Breakdown 2](./roombreakdown2.png)
-*Detailed interior volumetric breakdown of rooms within a property unit.*
 
 ---
 
 ### 6. Find My Plot Views
-**Plot Locator View 1:**
-![Find My Plot 1](./Find-My-Plot1.png)
-*Search and location interface designed to quickly pinpoint specific plots.*
-
-**Plot Locator View 2:**
-![Find My Plot 2](./Find-My-Plot2.png)
-*Advanced coordinate search and mapping view.*
+* **Locator View 1:** ![Find My Plot 1](./find-my-plot-1.png)
+* **Locator View 2:** ![Find My Plot 2](./find-my-plot-2.png)
+*
