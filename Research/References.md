@@ -14,7 +14,7 @@ This document contains the references and resources consulted during the develop
 # Existing System Analysis & Problem Statement
 
 ## Overview of the Current System
-India's Digital India Land Records Modernization Programme (DILRMP) introduced the Unique Land Parcel Identification Number (ULPIN)—popularly known as an "Aadhaar for land"—as a 14-digit alphanumeric identifier assigned to every surveyed land parcel from its geo-referenced cadastral coordinates[span_1](start_span)[span_1](end_span). While ULPIN successfully establishes a single authoritative source of truth for ground footprints, it is inherently **two-dimensional**[span_2](start_span)[span_2](end_span).
+India's Digital India Land Records Modernization Programme (DILRMP) introduced the Unique Land Parcel Identification Number (ULPIN)—popularly known as an "Aadhaar for land"—as a 14-digit alphanumeric identifier assigned to every surveyed land parcel from its geo-referenced cadastral coordinates(start_span)(end_span). While ULPIN successfully establishes a single authoritative source of truth for ground footprints, it is inherently **two-dimensional**(start_span)(end_span).
 
 ## Limitations of Existing 2D Systems
 As urban construction moves upward and underground, traditional 2D records fail to represent:
