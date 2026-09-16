@@ -74,7 +74,4 @@ This directory catalogs all interface views and workflow stages of the **ULPIN 3
 
 ---
 
-### 6. Find My Plot Views
-* **Locator View 1:** ![Find My Plot 1](./find-my-plot-1.png)
-* **Locator View 2:** ![Find My Plot 2](./find-my-plot-2.png)
-*
+
