@@ -1,6 +1,6 @@
 # Project Diagrams
 
-This folder contains the architecture diagrams, workflows and data-flow diagrams used in the ULPIN 3D project.
+This folder contains the architecture diagrams, workflows, and data-flow diagrams used in the ULPIN 3D project.
 
 ## 1. ULPIN Hierarchy & Data Structure
 
