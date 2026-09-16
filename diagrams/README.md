@@ -3,23 +3,21 @@
 This folder contains the architecture diagrams, workflows and data-flow diagrams used in the ULPIN 3D project.
 
 graph TD
-    A[User / Client UI] -->|Login / ULPIN Search| B[Frontend Application]
-    B -->|API Requests| C[Backend Server Services]
-    C -->|Query Records| D[(ULPIN & Land Records Database)]
-    C -->|Spatial Processing| E[3D Property Mapping Engine]
-    E -->|Rendered View & Layouts| B
+    A[ULPIN Unique Land Parcel ID] --> B[Land Parcel / Plot]
+    B --> C[Multi-Storey Building / Structure]
+    C --> D[Floor / Level e.g., Ground, First]
+    D --> E[Individual Apartment / Unit]
+    E --> F[Room Breakdown: Hall, Bedroom, Kitchen, Balcony]
 
-    sequenceDiagram
-    actor User
-    participant UI as Web/App UI
-    participant API as Backend API
-    participant DB as ULPIN Database
-    participant Engine as 3D Visualizer
+    flowchart LR
+    A[GIS & Survey Data] --> B[ULPIN Database]
+    C[Cadastral Maps] --> B
+    B --> D[3D Property Mapping Engine]
+    D --> E[Land Breakdown Views]
+    D --> F[Room Breakdown Views]
+    E --> G[Web/App User Interface]
+    F --> G
 
-    User->>UI: Enter ULPIN / Credentials
-    UI->>API: Request Property & Land Data
-    API->>DB: Query Spatial & Ownership Records
-    DB-->>API: Return Property Metadata
-    API-->>UI: Send JSON Data (Land/Room Breakdown)
-    UI->>Engine: Initialize 3D Model View
-    Engine-->>User: Display Interactive 3D Property Map
+    ```mermaid
+graph TD
+    A[ULPIN Unique Land Parcel ID] --> B[Land Parcel / Plot]
