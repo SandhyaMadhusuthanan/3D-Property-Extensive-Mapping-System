@@ -7,10 +7,6 @@ graph TD
     C --> D[Floor / Unit]
     D --> E[Room Breakdown]
 
-# 3D Building & Room Hierarchy
-
-This diagram details how the 3D building model breaks down from the main ULPIN parcel into individual floors, units, and specific rooms.
-
 ```mermaid
 graph TD
     A[ULPIN Land Parcel ID] --> B[Multi-Storey 3D Building Model]
