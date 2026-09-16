@@ -17,4 +17,4 @@ You only need:
 ### Step 1: Get the Repository
 Clone the project repository to your local computer, or download it as a ZIP file and extract it:
 ```bash
-git clone [https://github.com/SanthiyaMadhusudhanan/3D-Property-Extensive-Mapping-System.git](https://github.com/SanthiyaMadhusudhanan/3D-Property-Extensive-Mapping-System.git)
+git clone [https://github.com/SandhyaMadhusudhanan/3D-Property-Extensive-Mapping-System.git](https://github.com/SandhyaMadhusudhanan/3D-Property-Extensive-Mapping-System.git)
