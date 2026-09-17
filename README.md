@@ -2,8 +2,5 @@
 Unified ULPIN - based 3D platform for Land, Property and Public infrastructure visualization. 
 
 <p align="center">
-  <img src="assets/ulpin-3d-banner.png" width="100%">
+  <img src="assets/3d-extension-property-mapping-sy.jpg" alt="3D Property Extension Mapping System Banner" width="100%">
 </p>
-# ULPIN 3D
-
-Unified 3D Property & Land Mapping System
